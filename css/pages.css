@@ -1,0 +1,22 @@
+/* ── HOME HERO ───────────────────────────────────────────────── */
+.home-hero{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:20px 18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.home-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(74,184,232,0.15) 0%,transparent 70%);border-radius:50%;}
+.home-hero::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(232,79,140,0.10) 0%,transparent 70%);border-radius:50%;}
+.hero-icon{font-size:34px;color:var(--pink);margin-bottom:10px;}
+.hero-title{font-family:var(--font-display);font-size:21px;color:var(--text1);line-height:1.2;}
+.hero-ward{font-size:11px;color:var(--teal);letter-spacing:0.07em;text-transform:uppercase;font-weight:600;margin:6px 0 10px;}
+.hero-body{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* ── QUICK GRID ──────────────────────────────────────────────── */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.quick-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 13px;cursor:pointer;transition:all var(--tr);user-select:none;position:relative;overflow:hidden;}
+.quick-tile::before{content:'';position:absolute;top:-15px;right:-15px;width:60px;height:60px;border-radius:50%;opacity:0.12;transition:opacity var(--tr);}
+.quick-tile:active{transform:scale(0.97);}
+.quick-tile:active::before{opacity:0.22;}
+.qt-icon{font-size:26px;margin-bottom:9px;display:block;}
+.qt-label{font-size:13px;font-weight:600;color:var(--text1);}
+.qt-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+.qt-team .qt-icon{color:var(--pink);}    .qt-team::before{background:var(--pink);}
+.qt-dag  .qt-icon{color:var(--teal);}    .qt-dag::before{background:var(--teal);}
+.qt-regels .qt-icon{color:var(--gold);}  .qt-regels::before{background:var(--gold);}
+.qt-contact .qt-icon{color:var(--coral);}.qt-contact::before{background:var(--coral);}

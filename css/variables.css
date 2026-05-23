@@ -1,0 +1,46 @@
+/* ── BRAND PALETTE (from clinic icon) ─────────────────────────
+   navy   #2d3b8e   pink    #e84f8c   teal    #3dbfbf
+   gold   #f5c842   coral   #f07a3a   purple  #7b5ea7
+   sky    #4ab8e8   peach   #f0a07a
+──────────────────────────────────────────────────────────────── */
+:root {
+  /* Dark theme base */
+  --bg:        #0f1117;
+  --bg2:       #161b26;
+  --surface:   #1c2235;
+  --surface2:  #232840;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.14);
+  --text1:     #eef1f8;
+  --text2:     #8b95b0;
+  --text3:     #4a5270;
+
+  /* Brand colours */
+  --navy:   #2d3b8e;
+  --pink:   #e84f8c;
+  --teal:   #3dbfbf;
+  --gold:   #f5c842;
+  --coral:  #f07a3a;
+  --purple: #7b5ea7;
+  --sky:    #4ab8e8;
+  --peach:  #f0a07a;
+
+  /* Semantic accents */
+  --accent:     var(--sky);
+  --accent2:    var(--teal);
+  --accent-bg:  rgba(74,184,232,0.12);
+
+  --radius:14px; --radius-sm:8px;
+  --nav-h:68px; --header-h:64px; --status-h:28px;
+  --font-body:'DM Sans',sans-serif;
+  --font-display:'DM Serif Display',serif;
+  --tr:0.2s ease;
+}
+
+[data-theme="light"] {
+  --bg:#f2f4f9; --bg2:#ffffff; --surface:#ffffff; --surface2:#edf0f7;
+  --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.13);
+  --text1:#111520; --text2:#4a5270; --text3:#9ba3b8;
+  --accent:#2d6ecf; --accent2:#0d8a7a; --accent-bg:rgba(45,110,207,0.08);
+  --sky:#2d6ecf; --teal:#0d8a7a;
+}
