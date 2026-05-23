@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1117" id="themeMetaColor">
+<title>IVB High Care</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-logo"><img src="icon-512.png" alt="logo"></div>
+      <div class="header-text">
+        <div class="header-title">IVB High Care</div>
+        <div class="header-sub">Informatiegids</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="icon-btn search-btn" id="searchBtn" title="Zoeken"><span class="btn-icon" id="searchIcon">🔍</span></div>
+      <div class="icon-btn theme-btn" id="themeBtn" title="Thema wisselen"><span class="btn-icon" id="themeIcon">🌙</span></div>
+    </div>
+  </div>
+
+  <!-- SEARCH OVERLAY -->
+  <div id="searchOverlay">
+    <div class="search-bar">
+      <span style="font-size:18px;flex-shrink:0;">🔍</span>
+      <input type="text" id="searchInput" placeholder="Zoek in de gids…" autocomplete="off">
+      <span class="search-cancel" id="searchCancel">Annuleer</span>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+
+  <!-- CONTENT PANELS (populated by render.js) -->
+  <div class="content-area" id="contentArea">
+    <div class="panel active" id="panel-home"></div>
+    <div class="panel"        id="panel-team"></div>
+    <div class="panel"        id="panel-dag"></div>
+    <div class="panel"        id="panel-regels"></div>
+    <div class="panel"        id="panel-contact"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home"    onclick="goTo('home')">   <i class="ti ti-home"></i>           <span>Home</span></div>
+    <div class="nav-item"        id="nav-team"    onclick="goTo('team')">   <i class="ti ti-users"></i>          <span>Team</span></div>
+    <div class="nav-item"        id="nav-dag"     onclick="goTo('dag')">    <i class="ti ti-calendar"></i>       <span>Programma</span></div>
+    <div class="nav-item"        id="nav-regels"  onclick="goTo('regels')"> <i class="ti ti-clipboard-list"></i> <span>Regels</span></div>
+    <div class="nav-item"        id="nav-contact" onclick="goTo('contact')"><i class="ti ti-phone"></i>          <span>Contact</span></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- JS: order matters — theme & nav first, then render, then search -->
+<script src="js/theme.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/accordion.js"></script>
+<script src="js/render.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>
