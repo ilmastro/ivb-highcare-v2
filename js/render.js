@@ -1,0 +1,319 @@
+/* ── RENDER ──────────────────────────────────────────────────── */
+/* Fetches all data JSONs, renders each panel, and populates     */
+/* searchData dynamically for search.js to consume.             */
+
+window.searchData = [];
+
+/* ── HELPERS ─────────────────────────────────────────────────── */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* Newline-separated text → <p> tags, **bold** → <strong> */
+function bodyToHtml(text) {
+  if (!text) return '';
+  return text
+    .split(/\n\n/)
+    .map(para => {
+      const line = para.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      return `<p>${line}</p>`;
+    })
+    .join('');
+}
+
+function buildSchedule(schedule) {
+  if (!schedule || !schedule.length) return '';
+  return schedule.map(block => `
+    <div class="schedule-block">
+      <div class="schedule-day">${escHtml(block.day)}</div>
+      ${block.rows.map(r => `
+        <div class="schedule-row">
+          <span class="s-time">${escHtml(r.time)}</span>
+          ${r.activity ? `<span class="s-act">${escHtml(r.activity)}</span>` : ''}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function buildTijden(tijden) {
+  if (!tijden || !tijden.length) return '';
+  return tijden.map(t => `
+    <div class="info-row">
+      <span class="ir-label">${escHtml(t.label)}</span>
+      <span class="ir-value">${escHtml(t.tijd)}</span>
+    </div>`).join('');
+}
+
+function buildAccCard(card, extraBody = '') {
+  return `
+    <div class="acc-card" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon ${escHtml(card.color)}"><i class="ti ${escHtml(card.icon)}"></i></div>
+        <div class="acc-meta">
+          <div class="acc-title">${escHtml(card.title)}</div>
+          <div class="acc-sub">${escHtml(card.subtitle)}</div>
+        </div>
+        <i class="ti ti-chevron-down acc-chevron"></i>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner">
+        ${bodyToHtml(card.body)}
+        ${extraBody}
+      </div></div>
+    </div>`;
+}
+
+/* ── HOME ────────────────────────────────────────────────────── */
+function renderHome(data) {
+  const panel = document.getElementById('panel-home');
+  panel.innerHTML = `
+    <div class="home-hero">
+      <div class="hero-icon"><i class="ti ti-heart-handshake"></i></div>
+      <div class="hero-title">${escHtml(data.hero_title)}</div>
+      <div class="hero-ward">${escHtml(data.hero_ward)}</div>
+      <div class="hero-body">${escHtml(data.hero_body)}</div>
+    </div>
+
+    <div class="notice">
+      <i class="ti ti-info-circle"></i>
+      <p><strong>Vragen?</strong> ${escHtml(data.notice_text)}</p>
+    </div>
+
+    <div class="section-label">Snel naar</div>
+    <div class="quick-grid">
+      <div class="quick-tile qt-team" onclick="goTo('team')">
+        <i class="ti ti-users qt-icon"></i>
+        <div class="qt-label">Behandelteam</div><div class="qt-sub">Uw behandelaars</div>
+      </div>
+      <div class="quick-tile qt-dag" onclick="goTo('dag')">
+        <i class="ti ti-calendar-time qt-icon"></i>
+        <div class="qt-label">Dagprogramma</div><div class="qt-sub">Activiteiten &amp; sport</div>
+      </div>
+      <div class="quick-tile qt-regels" onclick="goTo('regels')">
+        <i class="ti ti-clipboard-list qt-icon"></i>
+        <div class="qt-label">Regels &amp; Visie</div><div class="qt-sub">Huisregels afdeling</div>
+      </div>
+      <div class="quick-tile qt-contact" onclick="goTo('contact')">
+        <i class="ti ti-phone qt-icon"></i>
+        <div class="qt-label">Contact</div><div class="qt-sub">Nummers &amp; tijden</div>
+      </div>
+    </div>
+
+    <div class="section-label">Informatiemap</div>
+    <div class="acc-card" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon ic-sky"><i class="ti ti-folder-open"></i></div>
+        <div class="acc-meta">
+          <div class="acc-title">Wat vindt u in deze gids?</div>
+          <div class="acc-sub">Overzicht van alle onderwerpen</div>
+        </div>
+        <i class="ti ti-chevron-down acc-chevron"></i>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner">
+        <p>${escHtml(data.infomap_body)}</p>
+        <div class="tag-row">
+          <span class="tag tag-pink"><i class="ti ti-users"></i> Team</span>
+          <span class="tag tag-teal"><i class="ti ti-calendar"></i> Programma</span>
+          <span class="tag tag-gold"><i class="ti ti-clipboard-list"></i> Regels</span>
+          <span class="tag tag-coral"><i class="ti ti-phone"></i> Contact</span>
+        </div>
+      </div></div>
+    </div>`;
+}
+
+/* ── TEAM ────────────────────────────────────────────────────── */
+function renderTeam(data) {
+  const panel = document.getElementById('panel-team');
+
+  const cards = data.cards.map(card => {
+    /* Extra tags for begeleiders card */
+    let extra = '';
+    if (card.id === 'begeleiders') {
+      extra = `<h4>Zij helpen u onder andere met</h4>
+        <div class="tag-row">
+          <span class="tag tag-teal">Contact met familie</span>
+          <span class="tag tag-sky">Dagbesteding</span>
+          <span class="tag tag-purple">Inbreng bij overleg</span>
+        </div>`;
+    }
+    return buildAccCard(card, extra);
+  }).join('');
+
+  panel.innerHTML = `<div class="page-title">Behandelteam</div>${cards}`;
+
+  /* Build searchData entries */
+  data.cards.forEach(card => {
+    window.searchData.push({
+      section: 'Team', tab: 'team', cls: 'sr-team',
+      title: card.title,
+      snippet: card.subtitle
+    });
+  });
+}
+
+/* ── PROGRAMMA ───────────────────────────────────────────────── */
+function renderProgramma(data) {
+  const panel = document.getElementById('panel-dag');
+
+  const cards = data.cards.map(card => {
+    let extra = '';
+    if (card.modules_list && card.modules_list.length) {
+      extra += `<div class="tag-row">${card.modules_list.map(m =>
+        `<span class="tag tag-purple">${escHtml(m)}</span>`).join('')}</div>`;
+    }
+    extra += buildSchedule(card.schedule);
+    return buildAccCard(card, extra);
+  }).join('');
+
+  panel.innerHTML = `<div class="page-title">Dagprogramma</div>${cards}`;
+
+  data.cards.forEach(card => {
+    const snippetParts = [];
+    if (card.subtitle) snippetParts.push(card.subtitle);
+    if (card.schedule && card.schedule.length) {
+      const firstDay = card.schedule[0];
+      snippetParts.push(firstDay.day + ': ' + firstDay.rows.map(r => r.time).join(', '));
+    }
+    window.searchData.push({
+      section: 'Programma', tab: 'dag', cls: 'sr-dag',
+      title: card.title,
+      snippet: snippetParts.join(' — ')
+    });
+  });
+}
+
+/* ── REGELS ──────────────────────────────────────────────────── */
+function renderRegels(data) {
+  const panel = document.getElementById('panel-regels');
+
+  const cards = data.cards.map(card => {
+    let extra = '';
+
+    /* Phases (visie card) */
+    if (card.phases && card.phases.length) {
+      const dotClasses = ['pd1', 'pd2', 'pd3', 'pd4'];
+      extra += card.phases.map((phase, i) => `
+        <div class="phase-step">
+          <div class="phase-dot ${dotClasses[i] || 'pd1'}">${i + 1}</div>
+          <div class="phase-content">
+            <div class="phase-title">${escHtml(phase.title)}</div>
+            <div class="phase-desc">${escHtml(phase.desc)}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    /* Tijden rows */
+    if (card.tijden && card.tijden.length) {
+      extra += buildTijden(card.tijden);
+    }
+
+    /* Numbered rules list */
+    if (card.rules && card.rules.length) {
+      extra += `<div class="rule-list">${card.rules.map((rule, i) => `
+        <div class="rule-item">
+          <div class="rule-num">${i + 1}</div>
+          <div class="rule-text">${escHtml(rule)}</div>
+        </div>`).join('')}</div>`;
+    }
+
+    /* Warning box */
+    if (card.warning) {
+      extra += `<div class="warn-box">
+        <i class="ti ti-alert-triangle"></i>
+        <p>${escHtml(card.warning)}</p>
+      </div>`;
+    }
+
+    return buildAccCard(card, extra);
+  }).join('');
+
+  panel.innerHTML = `<div class="page-title">Regels &amp; Visie</div>${cards}`;
+
+  data.cards.forEach(card => {
+    window.searchData.push({
+      section: 'Regels', tab: 'regels', cls: 'sr-regels',
+      title: card.title,
+      snippet: card.subtitle
+    });
+  });
+}
+
+/* ── CONTACT ─────────────────────────────────────────────────── */
+function renderContact(data) {
+  const panel = document.getElementById('panel-contact');
+
+  const persons = data.persons.map(p => `
+    <div class="contact-card">
+      <div class="avatar ${escHtml(p.avatar_color)}">${escHtml(p.initials)}</div>
+      <div>
+        <div class="contact-name">${escHtml(p.name)}</div>
+        <div class="contact-role">${escHtml(p.role)}</div>
+        <div class="contact-info ${escHtml(p.info_color)}">
+          <i class="ti ti-phone"></i>${escHtml(p.info)}
+        </div>
+      </div>
+    </div>`).join('');
+
+  /* Tijden accordion */
+  const tijdenRows = data.tijden.map(t => `
+    <div class="info-row">
+      <span class="ir-label">${escHtml(t.label)}</span>
+      <span class="ir-value">${escHtml(t.tijd)}</span>
+    </div>`).join('');
+
+  const tijdenAcc = `
+    <div class="section-label" style="margin-top:16px">Tijden</div>
+    <div class="acc-card" onclick="toggleAcc(this)">
+      <div class="acc-header">
+        <div class="acc-icon ic-coral"><i class="ti ti-clock-2"></i></div>
+        <div class="acc-meta">
+          <div class="acc-title">Bezoek- &amp; openingstijden</div>
+          <div class="acc-sub">Bezoek en SOP</div>
+        </div>
+        <i class="ti ti-chevron-down acc-chevron"></i>
+      </div>
+      <div class="acc-body"><div class="acc-body-inner">
+        ${tijdenRows}
+        ${data.tijden_note ? `<p style="margin-top:10px;">${escHtml(data.tijden_note)}</p>` : ''}
+      </div></div>
+    </div>`;
+
+  panel.innerHTML = `<div class="page-title">Contact</div>${persons}${tijdenAcc}`;
+
+  data.persons.forEach(p => {
+    window.searchData.push({
+      section: 'Contact', tab: 'contact', cls: 'sr-contact',
+      title: p.name,
+      snippet: p.role + ' — ' + p.info
+    });
+  });
+}
+
+/* ── INIT: fetch all JSONs in parallel ───────────────────────── */
+async function initApp() {
+  try {
+    const [home, team, programma, regels, contact] = await Promise.all([
+      fetch('./data/home.json').then(r => r.json()),
+      fetch('./data/team.json').then(r => r.json()),
+      fetch('./data/programma.json').then(r => r.json()),
+      fetch('./data/regels.json').then(r => r.json()),
+      fetch('./data/contact.json').then(r => r.json()),
+    ]);
+
+    renderHome(home);
+    renderTeam(team);
+    renderProgramma(programma);
+    renderRegels(regels);
+    renderContact(contact);
+
+    /* Notify search.js that data is ready */
+    window.dispatchEvent(new Event('searchDataReady'));
+
+  } catch (err) {
+    console.error('IVB render error:', err);
+  }
+}
+
+initApp();
