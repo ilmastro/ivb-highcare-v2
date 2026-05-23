@@ -1,0 +1,42 @@
+backend:
+  name: github
+  repo: ilmastro/ivb-highcare-v2
+  branch: main
+
+media_folder: ""
+
+collections:
+  - name: "home"
+    label: "Home"
+    files:
+      - file: "data/home.json"
+        label: "Home"
+        name: "home"
+
+  - name: "team"
+    label: "Team"
+    files:
+      - file: "data/team.json"
+        label: "Team"
+        name: "team"
+
+  - name: "programma"
+    label: "Programma"
+    files:
+      - file: "data/programma.json"
+        label: "Programma"
+        name: "programma"
+
+  - name: "regels"
+    label: "Regels"
+    files:
+      - file: "data/regels.json"
+        label: "Regels"
+        name: "regels"
+
+  - name: "contact"
+    label: "Contact"
+    files:
+      - file: "data/contact.json"
+        label: "Contact"
+        name: "contact"
