@@ -82,6 +82,25 @@
       "subtitle": "Wanneer mogen bezoekers komen?",
       "body": "Andere tijden zijn mogelijk in overleg met de afdeling.",
       "schedule": []
+    },
+    {
+      "id": "card_1779634273147",
+      "icon": "ti-palette",
+      "color": "ic-pink",
+      "title": "Beeldende Therapie",
+      "subtitle": "1 op 1",
+      "body": "Een ervaringsgerichte behandelvorm waarbij je met creatieve materialen—zoals verf, klei, hout of steen—aan de slag gaat om problemen, gevoelens en gedachten zichtbaar en tastbaar te maken.",
+      "schedule": [
+        {
+          "day": "Maandag",
+          "rows": [
+            {
+              "time": "09:00 – 10:30",
+              "activity": "Tekenen"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
