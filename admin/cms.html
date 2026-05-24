@@ -10,29 +10,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 
-  /* ── AUTH GATE ───────────────────────────────────────────────── */
-#authGate {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-}
-#authGate.hidden { display: none; }
-.auth-box {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: var(--radius); padding: 40px 36px;
-  text-align: center; max-width: 340px; width: 100%;
-  box-shadow: var(--shadow-md);
-}
-.auth-box h2 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; color: var(--text1); }
-.auth-box p  { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
-.auth-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 24px; border-radius: var(--radius-sm);
-  background: var(--text1); color: var(--bg2);
-  font-family: var(--font); font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; transition: opacity 0.2s;
-}
-.auth-btn:hover { opacity: 0.85; }
 /* ── TOKENS ──────────────────────────────────────────────── */
 :root {
   --bg: #f4f5f7;
@@ -90,6 +67,31 @@
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
 }
+  
+  /* ── AUTH GATE ───────────────────────────────────────────────── */
+#authGate {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+#authGate.hidden { display: none; }
+.auth-box {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 40px 36px;
+  text-align: center; max-width: 340px; width: 100%;
+  box-shadow: var(--shadow-md);
+}
+.auth-box h2 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; color: var(--text1); }
+.auth-box p  { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+.auth-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 24px; border-radius: var(--radius-sm);
+  background: var(--text1); color: var(--bg2);
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: opacity 0.2s;
+}
+.auth-btn:hover { opacity: 0.85; }
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1696,7 +1698,6 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   if (identityReady) {
     window.netlifyIdentity.open('login');
   } else {
-    /* Widget not ready yet — wait for init then open */
     window.netlifyIdentity.on('init', () => window.netlifyIdentity.open('login'));
   }
 });
