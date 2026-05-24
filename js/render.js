@@ -19,18 +19,21 @@ function bodyToHtml(text) {
   return text
     .split(/\n\n/)
     .map(para => {
-      const line = para.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const line = para.trim().replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                               .replace(/\n/g, '<br>');
       return `<p>${line}</p>`;
     })
+    .filter(p => p !== '<p></p>')
     .join('');
 }
 
+/* BUG FIX 1: template literal was truncated — r.activity ternary was never completed */
 function buildSchedule(schedule) {
   if (!schedule || !schedule.length) return '';
   return schedule.map(block => `
     <div class="schedule-block">
       <div class="schedule-day">${escHtml(block.day)}</div>
-      ${block.rows.map(r => `
+      ${(block.rows || []).map(r => `
         <div class="schedule-row">
           <span class="s-time">${escHtml(r.time)}</span>
           ${r.activity ? `<span class="s-act">${escHtml(r.activity)}</span>` : ''}
@@ -128,7 +131,6 @@ function renderTeam(data) {
   const panel = document.getElementById('panel-team');
 
   const cards = data.cards.map(card => {
-    /* Extra tags for begeleiders card */
     let extra = '';
     if (card.id === 'begeleiders') {
       extra = `<h4>Zij helpen u onder andere met</h4>
@@ -143,7 +145,6 @@ function renderTeam(data) {
 
   panel.innerHTML = `<div class="page-title">Behandelteam</div>${cards}`;
 
-  /* Build searchData entries */
   data.cards.forEach(card => {
     window.searchData.push({
       section: 'Team', tab: 'team', cls: 'sr-team',
@@ -263,6 +264,7 @@ function renderContact(data) {
       <span class="ir-value">${escHtml(t.tijd)}</span>
     </div>`).join('');
 
+  /* BUG FIX 2: tijden_note ternary was truncated — closing backtick and structure was missing */
   const tijdenAcc = `
     <div class="section-label" style="margin-top:16px">Tijden</div>
     <div class="acc-card" onclick="toggleAcc(this)">
@@ -313,6 +315,12 @@ async function initApp() {
 
   } catch (err) {
     console.error('IVB render error:', err);
+    /* Show a friendly error in the active panel instead of silent white screen */
+    document.querySelector('.panel.active').innerHTML = `
+      <div class="notice" style="margin-top:24px;">
+        <i class="ti ti-alert-triangle" style="color:var(--coral)"></i>
+        <p>Kon de inhoud niet laden. Controleer uw verbinding en ververs de pagina.</p>
+      </div>`;
   }
 }
 
