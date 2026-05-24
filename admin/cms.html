@@ -1532,12 +1532,12 @@ async function publishAll() {
 
   /* Build the files payload — matches your content/ folder structure */
   const files = {
-    'content/home.json':      data.home,
-    'content/team.json':      data.team,
-    'content/programma.json': data.programma,
-    'content/regels.json':    data.regels,
-    'content/contact.json':   data.contact,
-  };
+    'data/home.json':      data.home,
+    'data/team.json':      data.team,
+    'data/programma.json': data.programma,
+    'data/regels.json':    data.regels,
+    'data/contact.json':   data.contact,
+};
 
   try {
     const res = await fetch('/.netlify/functions/publish-content', {
