@@ -735,9 +735,9 @@ body {
   <div class="auth-box">
     <h2>IVB High Care</h2>
     <p>Beheeromgeving — inloggen vereist</p>
-    <button class="auth-btn" id="loginBtn" onclick="window.netlifyIdentity.open('login')">
-      <i class="ti ti-lock"></i> Inloggen
-    </button>
+    <button class="auth-btn" id="loginBtn">
+  <i class="ti ti-lock"></i> Inloggen
+</button>
   </div>
 </div>
 <div id="app">
@@ -1669,8 +1669,10 @@ function showPreview() { showToast('Voorvertoning — schakel naar uw telefoon o
    NETLIFY IDENTITY — gate the entire CMS behind login
 ══════════════════════════════════════════════════════════ */
 let currentUser = null;
+let identityReady = false;
 
 window.netlifyIdentity.on('init', user => {
+  identityReady = true;
   if (user) {
     currentUser = user;
     document.getElementById('authGate').classList.add('hidden');
@@ -1690,6 +1692,15 @@ window.netlifyIdentity.on('logout', () => {
   document.getElementById('authGate').classList.remove('hidden');
 });
 
+document.getElementById('loginBtn').addEventListener('click', () => {
+  if (identityReady) {
+    window.netlifyIdentity.open('login');
+  } else {
+    /* Widget not ready yet — wait for init then open */
+    window.netlifyIdentity.on('init', () => window.netlifyIdentity.open('login'));
+  }
+});
+
 function bootCMS() {
   try {
     const saved = localStorage.getItem('ivb-cms-data');
@@ -1698,13 +1709,12 @@ function bootCMS() {
   const savedTheme = localStorage.getItem('ivb-cms-theme');
   if (savedTheme === 'dark') {
     isDark = true;
-    document.documentElement.setAttribute('data-theme','dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
     document.getElementById('themeIcon').className = 'ti ti-sun';
   }
   navigate('dashboard');
 }
 
-/* This line MUST be last — triggers the init event above */
 window.netlifyIdentity.init();
 </script>
 </body>
