@@ -1575,10 +1575,13 @@ async function publishAll() {
 
   try {
     const res = await fetch('/.netlify/functions/publish-content', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ files }),
-    });
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${currentUser.token.access_token}`,
+  },
+  body: JSON.stringify({ files }),
+});
 
     const json = await res.json();
 
