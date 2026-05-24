@@ -1675,8 +1675,6 @@ window.netlifyIdentity.on('init', user => {
     currentUser = user;
     document.getElementById('authGate').classList.add('hidden');
     bootCMS();
-  } else {
-    /* Not logged in — gate stays visible, CMS stays dark */
   }
 });
 
@@ -1706,6 +1704,7 @@ function bootCMS() {
   navigate('dashboard');
 }
 
+/* This line MUST be last — triggers the init event above */
 window.netlifyIdentity.init();
 </script>
 </body>
