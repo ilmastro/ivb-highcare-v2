@@ -22,7 +22,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json',
   };
 }
@@ -56,6 +56,12 @@ exports.handler = async function (event) {
   /* ── Only allow POST ── */
   if (event.httpMethod !== 'POST') {
     return respond(405, { error: 'Method not allowed' }, origin);
+  }
+
+  /* ── Verify Netlify Identity JWT ── */
+  const authHeader = event.headers.authorization || event.headers.Authorization || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return respond(401, { error: 'Unauthorized — no token' }, origin);
   }
 
   /* ── Top-level try/catch so we ALWAYS return JSON, never an empty body ── */
