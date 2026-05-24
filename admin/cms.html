@@ -67,6 +67,20 @@
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
 }
+
+  .user-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 4px 4px 10px;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+}
+.user-avatar {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--sky));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
   
   /* ── AUTH GATE ───────────────────────────────────────────────── */
 #authGate {
@@ -802,7 +816,14 @@ body {
       <div class="topbar-btn primary" onclick="publishAll()">
         <i class="ti ti-send"></i> Publiceer
       </div>
-      <div class="icon-btn2" onclick="toggleTheme()" title="Thema wisselen" id="themeBtn"><i class="ti ti-moon" id="themeIcon"></i></div>
+      <div class="user-chip" id="userChip">
+  <div class="user-avatar" id="userAvatar"></div>
+  <span id="userEmail"></span>
+  <div class="icon-btn2" onclick="window.netlifyIdentity.logout()" title="Uitloggen">
+    <i class="ti ti-logout"></i>
+  </div>
+</div>
+<div class="icon-btn2" onclick="toggleTheme()" title="Thema wisselen" id="themeBtn"><i class="ti ti-moon" id="themeIcon"></i></div>
     </div>
   </header>
 
@@ -1714,6 +1735,11 @@ function bootCMS() {
     document.getElementById('themeIcon').className = 'ti ti-sun';
   }
   navigate('dashboard');
+
+  /* Show logged-in user in topbar */
+  const email = currentUser.email || '';
+  document.getElementById('userEmail').textContent = email;
+  document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
 }
 
 window.netlifyIdentity.init({ APIUrl: 'https://ivb-highcare-v2.netlify.app/.netlify/identity' });
