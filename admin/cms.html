@@ -615,68 +615,298 @@ body {
 .preview-body { flex: 1; overflow-y: auto; padding: 20px 16px; }
 .preview-body::-webkit-scrollbar { display: none; }
 
+/* ── PHONE MOCKUP — mirrors the real app (index.html + pages.css) ──
+   Scoped tokens so the mockup keeps its own look regardless of CMS theme.
+   Default = light theme (matches the actual app's default appearance).      */
 .phone-frame {
-  background: #0a0a0a;
-  border-radius: 38px;
-  padding: 9px;
+  --ph-bg:      #f2f4f9;
+  --ph-bg2:     #ffffff;
+  --ph-surface: #ffffff;
+  --ph-border:  rgba(0,0,0,0.07);
+  --ph-border2: rgba(0,0,0,0.13);
+  --ph-text1:   #111520;
+  --ph-text2:   #4a5270;
+  --ph-text3:   #9ba3b8;
+  --ph-pink:    #e84f8c;
+  --ph-teal:    #0d8a7a;
+  --ph-gold:    #f5c842;
+  --ph-coral:   #f07a3a;
+  --ph-sky:     #2d6ecf;
+
+  background: #1a1a1a;
+  border-radius: 36px;
+  padding: 8px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.04) inset;
   width: 240px;
   margin: 0 auto;
   position: relative;
 }
+/* small pill speaker — sits above the screen, inside the bezel */
 .phone-frame::before {
-  /* speaker / notch hint */
   content: '';
   position: absolute;
-  top: 14px; left: 50%;
+  top: 11px; left: 50%;
   transform: translateX(-50%);
-  width: 60px; height: 5px;
+  width: 44px; height: 4px;
   background: #000;
-  border-radius: 3px;
-  z-index: 2;
+  border-radius: 2px;
+  z-index: 3;
 }
 .phone-screen {
-  background: #0f1117;
-  border-radius: 30px;
+  background: var(--ph-bg);
+  border-radius: 28px;
   overflow: hidden;
   height: 510px;
-  font-family: var(--font);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 11px;
   position: relative;
   display: flex;
   flex-direction: column;
+  /* reserve room for the bezel/notch so the header isn't visually clipped */
+  padding-top: 14px;
 }
 
-/* phone inner styles */
-.ph-header { background: #161b26; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 7px; }
-.ph-logo { width: 22px; height: 22px; background: linear-gradient(135deg,#1a8080,#3dbfbf); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; }
-.ph-name { font-size: 10px; font-weight: 700; color: #eef1f8; }
-.ph-sub { font-size: 8px; color: #3dbfbf; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+/* header — circular logo image + title block + circular action buttons */
+.ph-header {
+  background: var(--ph-bg2);
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--ph-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.ph-logo {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--ph-bg2);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ph-logo img { width: 100%; height: 100%; object-fit: contain; }
+.ph-titles { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.ph-name {
+  font-family: var(--font-display, 'DM Serif Display', serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ph-text1);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+.ph-sub {
+  font-size: 7px;
+  color: var(--ph-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-top: 2px;
+}
 .ph-icons { margin-left: auto; display: flex; gap: 5px; }
-.ph-ic { width: 22px; height: 22px; background: #1c2235; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #8b95b0; }
+.ph-ic {
+  width: 22px; height: 22px;
+  background: var(--ph-bg2);
+  border: 1px solid var(--ph-border2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
 
-.ph-content { padding: 10px; flex: 1; overflow-y: auto; }
+/* content area */
+.ph-content {
+  padding: 11px 10px;
+  flex: 1;
+  overflow-y: auto;
+  background: var(--ph-bg);
+}
 .ph-content::-webkit-scrollbar { display: none; }
-.ph-hero { background: #161b26; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
-.ph-hero-icon { font-size: 18px; color: #e84f8c; margin-bottom: 5px; }
-.ph-hero-title { font-family: var(--font-display); font-size: 13px; color: #eef1f8; line-height: 1.3; margin-bottom: 2px; }
-.ph-hero-ward { font-size: 7px; color: #3dbfbf; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; margin-bottom: 5px; }
-.ph-hero-body { font-size: 8.5px; color: #8b95b0; line-height: 1.6; }
-.ph-notice { background: rgba(74,184,232,0.08); border: 1px solid rgba(74,184,232,0.2); border-radius: 6px; padding: 7px 8px; display: flex; gap: 5px; margin-bottom: 8px; }
-.ph-notice i { font-size: 10px; color: #4ab8e8; flex-shrink: 0; margin-top: 1px; }
-.ph-notice p { font-size: 8px; color: #8b95b0; line-height: 1.5; }
-.ph-notice strong { color: #eef1f8; }
-.ph-label { font-size: 7.5px; color: #4a5270; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; margin-bottom: 6px; }
-.ph-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.ph-tile { background: #1c2235; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 9px 8px; }
-.ph-tile-icon { font-size: 13px; margin-bottom: 4px; }
-.ph-tile-label { font-size: 8.5px; font-weight: 700; color: #eef1f8; }
-.ph-tile-sub { font-size: 7px; color: #8b95b0; margin-top: 1px; }
 
-.ph-nav { background: #161b26; border-top: 1px solid rgba(255,255,255,0.07); display: flex; padding: 6px 0 8px; }
-.ph-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 7px; color: #4a5270; }
+/* hero card with decorative pink + sky blobs (matches .home-hero) */
+.ph-hero {
+  background: var(--ph-bg2);
+  border: 1px solid var(--ph-border2);
+  border-radius: 10px;
+  padding: 13px 12px;
+  margin-bottom: 9px;
+  position: relative;
+  overflow: hidden;
+}
+.ph-hero::before {
+  content: '';
+  position: absolute;
+  top: -25px; right: -25px;
+  width: 90px; height: 90px;
+  background: radial-gradient(circle, rgba(74,184,232,0.18) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.ph-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: -15px;
+  width: 70px; height: 70px;
+  background: radial-gradient(circle, rgba(232,79,140,0.14) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.ph-hero > * { position: relative; z-index: 1; }
+.ph-hero-icon {
+  font-size: 18px;
+  color: var(--ph-pink);
+  margin-bottom: 7px;
+  line-height: 1;
+}
+.ph-hero-title {
+  font-family: var(--font-display, 'DM Serif Display', serif);
+  font-size: 13px;
+  color: var(--ph-text1);
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+.ph-hero-ward {
+  font-size: 7px;
+  color: var(--ph-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.ph-hero-body {
+  font-size: 8.5px;
+  color: var(--ph-text2);
+  line-height: 1.6;
+}
+
+/* notice */
+.ph-notice {
+  background: rgba(45,110,207,0.07);
+  border: 1px solid rgba(45,110,207,0.18);
+  border-radius: 6px;
+  padding: 7px 8px;
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.ph-notice i { font-size: 10px; color: var(--ph-sky); flex-shrink: 0; margin-top: 1px; }
+.ph-notice p { font-size: 8px; color: var(--ph-text2); line-height: 1.5; }
+.ph-notice strong { color: var(--ph-text1); font-weight: 700; }
+
+/* section label */
+.ph-label {
+  font-size: 7.5px;
+  color: var(--ph-text3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* quick tiles — white card with colored icon + soft corner blob */
+.ph-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+.ph-tile {
+  background: var(--ph-surface);
+  border: 1px solid var(--ph-border);
+  border-radius: 10px;
+  padding: 11px 10px;
+  position: relative;
+  overflow: hidden;
+}
+.ph-tile::before {
+  content: '';
+  position: absolute;
+  top: -10px; right: -10px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  opacity: 0.16;
+}
+.ph-tile-icon { font-size: 14px; margin-bottom: 6px; display: block; line-height: 1; position: relative; z-index: 1; }
+.ph-tile-label { font-size: 9px; font-weight: 700; color: var(--ph-text1); position: relative; z-index: 1; }
+.ph-tile-sub { font-size: 7.5px; color: var(--ph-text2); margin-top: 2px; position: relative; z-index: 1; }
+.ph-tile-team    .ph-tile-icon { color: var(--ph-pink); }    .ph-tile-team::before    { background: var(--ph-pink); }
+.ph-tile-prog    .ph-tile-icon { color: var(--ph-teal); }    .ph-tile-prog::before    { background: var(--ph-teal); }
+.ph-tile-regels  .ph-tile-icon { color: var(--ph-gold); }    .ph-tile-regels::before  { background: var(--ph-gold); }
+.ph-tile-contact .ph-tile-icon { color: var(--ph-coral); }   .ph-tile-contact::before { background: var(--ph-coral); }
+
+/* info-map row at the bottom of home */
+.ph-infomap {
+  background: var(--ph-surface);
+  border: 1px solid var(--ph-border);
+  border-radius: 10px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ph-infomap-icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: var(--ph-sky);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.ph-infomap-text { flex: 1; min-width: 0; }
+.ph-infomap-title { font-size: 9px; font-weight: 700; color: var(--ph-text1); }
+.ph-infomap-sub { font-size: 7.5px; color: var(--ph-text2); margin-top: 1px; }
+.ph-infomap i.chev { color: var(--ph-text3); font-size: 11px; }
+
+/* generic card used by team/programma/regels lists in dark-on-light style */
+.ph-card {
+  background: var(--ph-surface);
+  border: 1px solid var(--ph-border);
+  border-radius: 10px;
+  padding: 9px 10px;
+  margin-bottom: 6px;
+}
+.ph-card-head { display: flex; align-items: center; gap: 8px; }
+.ph-card-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 11px;
+}
+.ph-card-title { font-size: 9.5px; font-weight: 700; color: var(--ph-text1); line-height: 1.2; }
+.ph-card-sub { font-size: 7.5px; color: var(--ph-text2); margin-top: 1px; }
+.ph-card-body { font-size: 7.5px; color: var(--ph-text2); margin-top: 6px; line-height: 1.5; }
+
+/* bottom nav */
+.ph-nav {
+  background: var(--ph-bg2);
+  border-top: 1px solid var(--ph-border);
+  display: flex;
+  padding: 6px 0 8px;
+  flex-shrink: 0;
+}
+.ph-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 7px;
+  color: var(--ph-text3);
+  position: relative;
+  padding-top: 4px;
+}
 .ph-nav-item i { font-size: 13px; }
-.ph-nav-item.active { color: #4ab8e8; }
+.ph-nav-item.active { color: var(--ph-sky); }
+.ph-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 30%; right: 30%;
+  height: 2px;
+  background: var(--ph-sky);
+  border-radius: 0 0 2px 2px;
+}
 
 /* ── TOAST ───────────────────────────────────────────────── */
 .toast {
@@ -1664,30 +1894,49 @@ function switchPreviewTab(tab, el) {
 function updatePhonePreview() {
   const screen = document.getElementById('phoneScreen');
   if (!screen) return;
-  const bgMap={'ic-sky':'#2980b9','ic-pink':'#a01860','ic-teal':'#1a8080','ic-gold':'#b8860b','ic-coral':'#b84a10','ic-purple':'#4a2a7a','ic-navy':'#1a2060','ic-peach':'#b85530','ic-red':'#8b1a1a','ic-green':'#1a5a2a'};
-  const bg = c => bgMap[c] || '#2980b9';
+
+  /* icon-colour palette for card icons — uses brand tones, on light cards */
+  const bgMap = {
+    'ic-sky':'#2d6ecf', 'ic-pink':'#e84f8c', 'ic-teal':'#0d8a7a',
+    'ic-gold':'#d49a0a', 'ic-coral':'#e06420', 'ic-purple':'#7b5ea7',
+    'ic-navy':'#2d3b8e', 'ic-peach':'#e08456', 'ic-red':'#c0392b',
+    'ic-green':'#2a8a4a'
+  };
+  const bg = c => bgMap[c] || '#2d6ecf';
+
+  /* header: real logo image, app name + subtitle, search + theme buttons */
+  const appName = (data._meta?.settings?.appName || 'DE SPRENG').toUpperCase();
+  const hdr = `<div class="ph-header">
+    <div class="ph-logo"><img src="../icon-512.png" alt="logo"></div>
+    <div class="ph-titles">
+      <div class="ph-name">${esc(appName)}</div>
+      <div class="ph-sub">Informatiegids</div>
+    </div>
+    <div class="ph-icons">
+      <div class="ph-ic">🔍</div>
+      <div class="ph-ic">☀️</div>
+    </div>
+  </div>`;
 
   const navBar = (active) => `<div class="ph-nav">
     ${[['home','ti-home','Home'],['team','ti-users','Team'],['programma','ti-calendar','Prog'],['regels','ti-clipboard-list','Regels'],['contact','ti-phone','Contact']].map(([k,ic,lbl])=>`
     <div class="ph-nav-item ${active===k?'active':''}" onclick="switchPreviewTab('${k}')" style="cursor:pointer"><i class="ti ${ic}"></i><span>${lbl}</span></div>`).join('')}
   </div>`;
 
-  const hdr = `<div class="ph-header">
-    <div class="ph-logo"><i class="ti ti-heart-handshake" style="font-size:10px;color:#fff"></i></div>
-    <div><div class="ph-name">${esc(data.home.hero_ward||'IVB High Care')}</div><div class="ph-sub">Informatiegids</div></div>
-    <div class="ph-icons"><div class="ph-ic">🔍</div><div class="ph-ic">🌙</div></div>
-  </div>`;
-
-  /* helper: render a card list with body excerpts */
+  /* helper: card list for team / programma / regels — light cards, dark text */
   const renderCardList = (cards, labelName) => `<div class="ph-content">
-    <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(labelName)}</div>
-    ${cards.map(c=>`<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:24px;height:24px;border-radius:6px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:11px;color:#fff"></i></div>
-        <div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle||'')}</div></div>
-      </div>
-      ${c.body ? `<div style="font-size:7.5px;color:#a0aac0;margin-top:5px;line-height:1.45">${esc(c.body.substring(0,90))}${c.body.length>90?'…':''}</div>` : ''}
-    </div>`).join('')}
+    <div class="ph-label">${esc((labelName||'').toUpperCase())}</div>
+    ${cards.map(c => `
+      <div class="ph-card">
+        <div class="ph-card-head">
+          <div class="ph-card-icon" style="background:${bg(c.color)}"><i class="ti ${esc(c.icon||'ti-circle')}"></i></div>
+          <div style="flex:1;min-width:0">
+            <div class="ph-card-title">${esc(c.title||'')}</div>
+            ${c.subtitle ? `<div class="ph-card-sub">${esc(c.subtitle)}</div>` : ''}
+          </div>
+        </div>
+        ${c.body ? `<div class="ph-card-body">${esc(c.body.substring(0,110))}${c.body.length>110?'…':''}</div>` : ''}
+      </div>`).join('')}
   </div>`;
 
   if (previewTab === 'home') {
@@ -1703,39 +1952,64 @@ function updatePhonePreview() {
         <div class="ph-notice"><i class="ti ti-info-circle"></i><p><strong>Vragen?</strong> ${esc(h.notice_text)}</p></div>
         <div class="ph-label">Snel naar</div>
         <div class="ph-grid">
-          <div class="ph-tile" onclick="switchPreviewTab('team')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#e84f8c">👥</div><div class="ph-tile-label">${esc(data._meta?.names?.team||'Behandelteam')}</div></div>
-          <div class="ph-tile" onclick="switchPreviewTab('programma')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#3dbfbf">📅</div><div class="ph-tile-label">${esc(data._meta?.names?.programma||'Dagprogramma')}</div></div>
-          <div class="ph-tile" onclick="switchPreviewTab('regels')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#f5c842">📋</div><div class="ph-tile-label">${esc(data._meta?.names?.regels||'Regels & Visie')}</div></div>
-          <div class="ph-tile" onclick="switchPreviewTab('contact')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#f07a3a">📞</div><div class="ph-tile-label">${esc(data._meta?.names?.contact||'Contact')}</div></div>
+          <div class="ph-tile ph-tile-team" onclick="switchPreviewTab('team')" style="cursor:pointer">
+            <i class="ti ti-users ph-tile-icon"></i>
+            <div class="ph-tile-label">${esc(data._meta?.names?.team||'Behandelteam')}</div>
+            <div class="ph-tile-sub">Uw behandelaars</div>
+          </div>
+          <div class="ph-tile ph-tile-prog" onclick="switchPreviewTab('programma')" style="cursor:pointer">
+            <i class="ti ti-calendar-time ph-tile-icon"></i>
+            <div class="ph-tile-label">${esc(data._meta?.names?.programma||'Dagprogramma')}</div>
+            <div class="ph-tile-sub">Activiteiten &amp; sport</div>
+          </div>
+          <div class="ph-tile ph-tile-regels" onclick="switchPreviewTab('regels')" style="cursor:pointer">
+            <i class="ti ti-clipboard-list ph-tile-icon"></i>
+            <div class="ph-tile-label">${esc(data._meta?.names?.regels||'Regels &amp; Visie')}</div>
+            <div class="ph-tile-sub">Huisregels afdeling</div>
+          </div>
+          <div class="ph-tile ph-tile-contact" onclick="switchPreviewTab('contact')" style="cursor:pointer">
+            <i class="ti ti-phone ph-tile-icon"></i>
+            <div class="ph-tile-label">${esc(data._meta?.names?.contact||'Contact')}</div>
+            <div class="ph-tile-sub">Nummers &amp; tijden</div>
+          </div>
+        </div>
+        <div class="ph-label">Informatiemap</div>
+        <div class="ph-infomap">
+          <div class="ph-infomap-icon"><i class="ti ti-folder-open"></i></div>
+          <div class="ph-infomap-text">
+            <div class="ph-infomap-title">Wat vindt u in deze gids?</div>
+            <div class="ph-infomap-sub">Overzicht van alle onderwerpen</div>
+          </div>
+          <i class="ti ti-chevron-down chev"></i>
         </div>
       </div>` + navBar('home');
 
   } else if (previewTab === 'team') {
-    screen.innerHTML = hdr + renderCardList(data.team.cards, data._meta?.names?.team||'Behandelteam') + navBar('team');
+    screen.innerHTML = hdr + renderCardList(data.team.cards, data._meta?.names?.team || 'Behandelteam') + navBar('team');
   } else if (previewTab === 'programma') {
-    screen.innerHTML = hdr + renderCardList(data.programma.cards, data._meta?.names?.programma||'Dagprogramma') + navBar('programma');
+    screen.innerHTML = hdr + renderCardList(data.programma.cards, data._meta?.names?.programma || 'Dagprogramma') + navBar('programma');
   } else if (previewTab === 'regels') {
-    screen.innerHTML = hdr + renderCardList(data.regels.cards, data._meta?.names?.regels||'Regels & Visie') + navBar('regels');
+    screen.innerHTML = hdr + renderCardList(data.regels.cards, data._meta?.names?.regels || 'Regels & Visie') + navBar('regels');
   } else if (previewTab === 'contact') {
-    /* mirror real app: name (white) + role (muted) + clickable info line (accent) */
-    const infoColorMap = { 'ci-sky': '#4ab8e8', 'ci-teal': '#3dbfbf', 'ci-pink': '#e84f8c' };
+    /* mirror real app on light background: dark name, muted role, accent info line */
+    const infoColorMap = { 'ci-sky': '#2d6ecf', 'ci-teal': '#0d8a7a', 'ci-pink': '#e84f8c' };
     const personCards = data.contact.persons.map(p => {
-      const infoColor = infoColorMap[p.info_color] || '#4ab8e8';
-      return `<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 11px;margin-bottom:7px">
-        <div style="font-size:10px;font-weight:700;color:#eef1f8;line-height:1.3">${esc(p.name)}</div>
-        <div style="font-size:8px;color:#8b95b0;margin-top:3px;line-height:1.4">${esc(p.role)}</div>
-        <div style="font-size:8.5px;color:${infoColor};margin-top:5px;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-phone" style="font-size:9px"></i>${esc(p.info)}</div>
+      const infoColor = infoColorMap[p.info_color] || '#2d6ecf';
+      return `<div class="ph-card">
+        <div class="ph-card-title">${esc(p.name)}</div>
+        <div class="ph-card-sub" style="margin-top:3px">${esc(p.role)}</div>
+        <div style="font-size:8.5px;color:${infoColor};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-phone" style="font-size:9px"></i>${esc(p.info)}</div>
       </div>`;
     }).join('');
 
-    const tijdenBlock = data.contact.tijden.length ? `<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 11px;margin-top:10px">
-        <div style="font-size:8px;color:#8b95b0;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px">Openingstijden</div>
-        ${data.contact.tijden.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;border-top:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#8b95b0">${esc(t.label)}</span><span style="font-size:8.5px;color:#eef1f8;font-weight:700;text-align:right">${esc(t.tijd)}</span></div>`).join('')}
-        ${data.contact.tijden_note ? `<div style="font-size:7.5px;color:#6b7590;margin-top:7px;font-style:italic;line-height:1.5">${esc(data.contact.tijden_note)}</div>` : ''}
+    const tijdenBlock = data.contact.tijden.length ? `<div class="ph-card" style="margin-top:8px">
+        <div class="ph-label" style="margin-bottom:6px">Openingstijden</div>
+        ${data.contact.tijden.map(t => `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-top:1px solid var(--ph-border)"><span style="font-size:8px;color:var(--ph-text2)">${esc(t.label)}</span><span style="font-size:8.5px;color:var(--ph-text1);font-weight:700;text-align:right">${esc(t.tijd)}</span></div>`).join('')}
+        ${data.contact.tijden_note ? `<div style="font-size:7.5px;color:var(--ph-text3);margin-top:7px;font-style:italic;line-height:1.5">${esc(data.contact.tijden_note)}</div>` : ''}
       </div>` : '';
 
     screen.innerHTML = hdr + `<div class="ph-content">
-      <div class="ph-label" style="margin-bottom:10px;font-size:9px;color:#eef1f8;font-weight:700;letter-spacing:0.08em">${esc((data._meta?.names?.contact||'Contact').toUpperCase())}</div>
+      <div class="ph-label">${esc((data._meta?.names?.contact||'Contact').toUpperCase())}</div>
       ${personCards}
       ${tijdenBlock}
     </div>` + navBar('contact');
