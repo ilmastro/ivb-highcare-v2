@@ -967,7 +967,11 @@ function navigate(page) {
     n.classList.toggle('active', n.dataset.page === page);
   });
   const labels = { dashboard:'Alle inhoudstypen', home:'Home pagina', team:'Behandelteam', programma:'Dagprogramma', regels:'Regels & Visie', contact:'Contact', media:'Media', instellingen:'Instellingen' };
-  document.getElementById('breadcrumbCurrent').textContent = labels[page] || page;
+  let label = labels[page];
+  if (!label && page && page.startsWith('custom_')) {
+    label = data._meta?.names?.[page] || page;
+  }
+  document.getElementById('breadcrumbCurrent').textContent = label || page;
   renderPage(page);
 }
 
@@ -1051,6 +1055,10 @@ function renderPage(page) {
   else if (page === 'contact') renderContactEditor(area);
   else if (page === 'media') renderMediaPage(area);
   else if (page === 'instellingen') renderInstellingenPage(area);
+  else if (page && page.startsWith('custom_') && data[page]) {
+    const customName = data._meta?.names?.[page] || page;
+    renderCardListEditor(area, page, customName, 'Kaarten', 'ti-folder', true);
+  }
 
   updatePhonePreview();
 }
@@ -1059,13 +1067,29 @@ function renderPage(page) {
    DASHBOARD
 ══════════════════════════════════════════════════════════ */
 function renderDashboard(area) {
-  const cards = [
+  const baseCards = [
     { key:'home', icon:'ti-home', color:'bg-coral', name: data._meta?.names?.home || 'Home pagina', desc:'Welkomstscherm & hoofdmenu', count: 1 },
     { key:'team', icon:'ti-users', color:'bg-pink', name: data._meta?.names?.team || 'Behandelteam', desc:'Behandelaars & rollen', count: data.team.cards.length },
     { key:'programma', icon:'ti-calendar', color:'bg-gold', name: data._meta?.names?.programma || 'Dagprogramma', desc:'Activiteiten & sport', count: data.programma.cards.length },
     { key:'regels', icon:'ti-clipboard-list', color:'bg-teal', name: data._meta?.names?.regels || 'Regels & Visie', desc:'Huisregels en afdelingsvisie', count: data.regels.cards.length },
     { key:'contact', icon:'ti-phone', color:'bg-sky', name: data._meta?.names?.contact || 'Contact', desc:'Nummers, locatie & openingstijden', count: data.contact.persons.length },
   ];
+
+  /* include custom types (any key starting with custom_) */
+  const customColors = ['bg-purple','bg-navy','bg-peach','bg-red','bg-green'];
+  const customCards = Object.keys(data)
+    .filter(k => k.startsWith('custom_'))
+    .map((k,i) => ({
+      key: k,
+      icon: 'ti-folder',
+      color: customColors[i % customColors.length],
+      name: data._meta?.names?.[k] || k,
+      desc: 'Eigen inhoudstype',
+      count: (data[k].cards || []).length,
+      custom: true,
+    }));
+
+  const cards = [...baseCards, ...customCards];
 
   function lastEdited(key) {
     const m = data._meta?.edits?.[key];
@@ -1094,16 +1118,19 @@ function renderDashboard(area) {
     </div>
     <div class="content-types-grid">
       ${cards.map(c => `
-        <div class="content-type-card">
+        <div class="content-type-card" onclick="navigate('${c.key}')" style="cursor:pointer">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
-            <div class="ct-icon ${c.color}" onclick="navigate('${c.key}')"><i class="ti ${c.icon}"></i></div>
-            <div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px" onclick="renameContentType('${c.key}','${esc(c.name)}')" title="Naam wijzigen"><i class="ti ti-pencil" style="font-size:12px"></i></div>
+            <div class="ct-icon ${c.color}"><i class="ti ${c.icon}"></i></div>
+            <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+              <div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px" onclick="renameContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Naam wijzigen"><i class="ti ti-pencil" style="font-size:12px"></i></div>
+              ${c.custom ? `<div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px;color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="deleteContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Verwijderen"><i class="ti ti-trash" style="font-size:12px"></i></div>` : ''}
+            </div>
           </div>
-          <div class="ct-name" id="ctname-${c.key}" onclick="navigate('${c.key}')" style="cursor:pointer">${esc(c.name)}</div>
-          <div class="ct-desc" onclick="navigate('${c.key}')">${esc(c.desc)}</div>
+          <div class="ct-name" id="ctname-${c.key}">${esc(c.name)}</div>
+          <div class="ct-desc">${esc(c.desc)}</div>
           <div class="ct-footer">
             <span class="ct-count">${c.count} item${c.count !== 1 ? 's' : ''} · ${lastEdited(c.key)}</span>
-            <span class="ct-edit" onclick="navigate('${c.key}')">Bewerken <i class="ti ti-chevron-right" style="font-size:13px"></i></span>
+            <span class="ct-edit">Bewerken <i class="ti ti-chevron-right" style="font-size:13px"></i></span>
           </div>
         </div>
       `).join('')}
@@ -1563,19 +1590,32 @@ function toggleSectionGroup(header) {
 let previewTab = 'home';
 function switchPreviewTab(tab, el) {
   previewTab = tab;
-  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.ptab').forEach(t => {
+    t.classList.toggle('active', t.textContent.toLowerCase().startsWith(tab.slice(0,4)) || (tab==='programma' && t.textContent==='Prog'));
+  });
+  /* if called from a specific element, force-activate it */
+  if (el && el.classList) {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    /* called from inside phone — sync top tabs */
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    const map = {home:0, team:1, programma:2, regels:3, contact:4};
+    const tabs = document.querySelectorAll('.ptab');
+    if (tabs[map[tab]]) tabs[map[tab]].classList.add('active');
+  }
   updatePhonePreview();
 }
 
 function updatePhonePreview() {
   const screen = document.getElementById('phoneScreen');
+  if (!screen) return;
   const bgMap={'ic-sky':'#2980b9','ic-pink':'#a01860','ic-teal':'#1a8080','ic-gold':'#b8860b','ic-coral':'#b84a10','ic-purple':'#4a2a7a','ic-navy':'#1a2060','ic-peach':'#b85530','ic-red':'#8b1a1a','ic-green':'#1a5a2a'};
   const bg = c => bgMap[c] || '#2980b9';
 
   const navBar = (active) => `<div class="ph-nav">
     ${[['home','ti-home','Home'],['team','ti-users','Team'],['programma','ti-calendar','Prog'],['regels','ti-clipboard-list','Regels'],['contact','ti-phone','Contact']].map(([k,ic,lbl])=>`
-    <div class="ph-nav-item ${active===k?'active':''}"><i class="ti ${ic}"></i><span>${lbl}</span></div>`).join('')}
+    <div class="ph-nav-item ${active===k?'active':''}" onclick="switchPreviewTab('${k}')" style="cursor:pointer"><i class="ti ${ic}"></i><span>${lbl}</span></div>`).join('')}
   </div>`;
 
   const hdr = `<div class="ph-header">
@@ -1584,10 +1624,22 @@ function updatePhonePreview() {
     <div class="ph-icons"><div class="ph-ic">🔍</div><div class="ph-ic">🌙</div></div>
   </div>`;
 
+  /* helper: render a card list with body excerpts */
+  const renderCardList = (cards, labelName) => `<div class="ph-content" style="overflow-y:auto;max-height:340px">
+    <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(labelName)}</div>
+    ${cards.map(c=>`<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:24px;border-radius:6px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:11px;color:#fff"></i></div>
+        <div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle||'')}</div></div>
+      </div>
+      ${c.body ? `<div style="font-size:7.5px;color:#a0aac0;margin-top:5px;line-height:1.45">${esc(c.body.substring(0,90))}${c.body.length>90?'…':''}</div>` : ''}
+    </div>`).join('')}
+  </div>`;
+
   if (previewTab === 'home') {
     const h = data.home;
     screen.innerHTML = hdr + `
-      <div class="ph-content">
+      <div class="ph-content" style="overflow-y:auto;max-height:340px">
         <div class="ph-hero">
           <div class="ph-hero-icon"><i class="ti ti-heart-handshake"></i></div>
           <div class="ph-hero-title">${esc(h.hero_title)}</div>
@@ -1597,50 +1649,31 @@ function updatePhonePreview() {
         <div class="ph-notice"><i class="ti ti-info-circle"></i><p><strong>Vragen?</strong> ${esc(h.notice_text)}</p></div>
         <div class="ph-label">Snel naar</div>
         <div class="ph-grid">
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#e84f8c">👥</div><div class="ph-tile-label">${esc(data._meta?.names?.team||'Behandelteam')}</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#3dbfbf">📅</div><div class="ph-tile-label">${esc(data._meta?.names?.programma||'Dagprogramma')}</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f5c842">📋</div><div class="ph-tile-label">${esc(data._meta?.names?.regels||'Regels & Visie')}</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f07a3a">📞</div><div class="ph-tile-label">${esc(data._meta?.names?.contact||'Contact')}</div></div>
+          <div class="ph-tile" onclick="switchPreviewTab('team')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#e84f8c">👥</div><div class="ph-tile-label">${esc(data._meta?.names?.team||'Behandelteam')}</div></div>
+          <div class="ph-tile" onclick="switchPreviewTab('programma')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#3dbfbf">📅</div><div class="ph-tile-label">${esc(data._meta?.names?.programma||'Dagprogramma')}</div></div>
+          <div class="ph-tile" onclick="switchPreviewTab('regels')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#f5c842">📋</div><div class="ph-tile-label">${esc(data._meta?.names?.regels||'Regels & Visie')}</div></div>
+          <div class="ph-tile" onclick="switchPreviewTab('contact')" style="cursor:pointer"><div class="ph-tile-icon" style="color:#f07a3a">📞</div><div class="ph-tile-label">${esc(data._meta?.names?.contact||'Contact')}</div></div>
         </div>
       </div>` + navBar('home');
 
   } else if (previewTab === 'team') {
-    screen.innerHTML = hdr + `<div class="ph-content">
-      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.team||'Behandelteam')}</div>
-      ${data.team.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
-        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
-      </div>`).join('')}
-    </div>` + navBar('team');
-
+    screen.innerHTML = hdr + renderCardList(data.team.cards, data._meta?.names?.team||'Behandelteam') + navBar('team');
   } else if (previewTab === 'programma') {
-    screen.innerHTML = hdr + `<div class="ph-content">
-      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.programma||'Dagprogramma')}</div>
-      ${data.programma.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
-        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
-      </div>`).join('')}
-    </div>` + navBar('programma');
-
+    screen.innerHTML = hdr + renderCardList(data.programma.cards, data._meta?.names?.programma||'Dagprogramma') + navBar('programma');
   } else if (previewTab === 'regels') {
-    screen.innerHTML = hdr + `<div class="ph-content">
-      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.regels||'Regels & Visie')}</div>
-      ${data.regels.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
-        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
-      </div>`).join('')}
-    </div>` + navBar('regels');
-
+    screen.innerHTML = hdr + renderCardList(data.regels.cards, data._meta?.names?.regels||'Regels & Visie') + navBar('regels');
   } else if (previewTab === 'contact') {
-    screen.innerHTML = hdr + `<div class="ph-content">
+    screen.innerHTML = hdr + `<div class="ph-content" style="overflow-y:auto;max-height:340px">
       <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.contact||'Contact')}</div>
       ${data.contact.persons.map(p=>`<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 10px;margin-bottom:6px">
         <div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(p.name)}</div>
         <div style="font-size:7.5px;color:#8b95b0;margin-top:2px">${esc(p.role)}</div>
         <div style="font-size:7.5px;color:#4ab8e8;margin-top:3px">${esc(p.info)}</div>
       </div>`).join('')}
-      ${data.contact.tijden.length ? `<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 10px;margin-top:2px">
+      ${data.contact.tijden.length ? `<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 10px;margin-top:6px">
+        <div style="font-size:8px;color:#8b95b0;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Openingstijden</div>
         ${data.contact.tijden.map(t=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:7.5px;color:#8b95b0">${esc(t.label)}</span><span style="font-size:7.5px;color:#eef1f8;font-weight:600">${esc(t.tijd)}</span></div>`).join('')}
+        ${data.contact.tijden_note ? `<div style="font-size:7px;color:#6b7590;margin-top:5px;font-style:italic">${esc(data.contact.tijden_note)}</div>` : ''}
       </div>` : ''}
     </div>` + navBar('contact');
   }
@@ -1715,7 +1748,8 @@ function renderInstellingenPage(area) {
       <div class="section-group-body">
         <div class="field">
           <div class="field-label">App-naam (zichtbaar in browser-tab)</div>
-          <input class="input" id="set-appname" value="${esc(s.appName||'IVB High Care — Informatiegids')}" placeholder="App naam">
+          <input class="input" id="set-appname" value="${esc(s.appName||'IVB High Care — Informatiegids')}" placeholder="App naam" oninput="updateAppName(this.value)">
+          <div class="field-hint">Wordt getoond in de browser-tab van het CMS.</div>
         </div>
         <div class="field">
           <div class="field-label">Afdeling</div>
@@ -1776,6 +1810,14 @@ function saveThemePref(theme) {
   triggerAutoSave();
 }
 
+function updateAppName(name) {
+  if (!data._meta) data._meta = {};
+  if (!data._meta.settings) data._meta.settings = {};
+  data._meta.settings.appName = name;
+  document.title = name || 'IVB High Care — Beheer CMS';
+  triggerAutoSave();
+}
+
 /* ══════════════════════════════════════════════════════════
    RENAME CONTENT TYPE
 ══════════════════════════════════════════════════════════ */
@@ -1789,6 +1831,17 @@ function renameContentType(key, currentName) {
   renderDashboard(document.getElementById('editorArea'));
   updateNavBadges();
   showToast(`Naam gewijzigd naar "${name.trim()}"`, 'ti-check');
+}
+
+function deleteContentType(key, currentName) {
+  confirmDelete(`Inhoudstype verwijderen?`, `Weet u zeker dat u "${currentName}" wilt verwijderen? Alle kaarten gaan verloren.`, () => {
+    delete data[key];
+    if (data._meta?.names) delete data._meta.names[key];
+    if (data._meta?.edits) delete data._meta.edits[key];
+    triggerAutoSave();
+    renderDashboard(document.getElementById('editorArea'));
+    showToast(`"${currentName}" verwijderd`, 'ti-trash');
+  });
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2006,7 +2059,13 @@ function bootCMS() {
     const saved = localStorage.getItem('ivb-cms-data');
     if (saved) data = JSON.parse(saved);
   } catch(e) {}
-  const savedTheme = localStorage.getItem('ivb-cms-theme');
+
+  /* Apply saved app name to document title */
+  const appName = data._meta?.settings?.appName;
+  if (appName) document.title = appName;
+
+  /* Theme: localStorage takes priority, else fall back to settings default */
+  const savedTheme = localStorage.getItem('ivb-cms-theme') || data._meta?.settings?.defaultTheme;
   if (savedTheme === 'dark') {
     isDark = true;
     document.documentElement.setAttribute('data-theme', 'dark');
