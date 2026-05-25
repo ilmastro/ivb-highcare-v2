@@ -479,7 +479,7 @@ body {
   margin-left: auto;
   display: flex;
   gap: 4px;
-  opacity: 0;
+  opacity: 0.55;
   transition: opacity var(--tr);
 }
 .card-item-header:hover .card-item-actions { opacity: 1; }
@@ -781,6 +781,7 @@ body {
     <div class="nav-item" data-page="programma" onclick="navigate('programma')"><i class="ti ti-calendar"></i> Dagprogramma <span class="nav-badge" id="badge-programma">…</span></div>
     <div class="nav-item" data-page="regels" onclick="navigate('regels')"><i class="ti ti-clipboard-list"></i> Regels &amp; Visie <span class="nav-badge" id="badge-regels">…</span></div>
     <div class="nav-item" data-page="contact" onclick="navigate('contact')"><i class="ti ti-phone"></i> Contact <span class="nav-badge" id="badge-contact">…</span></div>
+    <div id="customNavItems"></div>
   </div>
 
   <div class="sidebar-section-label" style="margin-top:8px">Bibliotheek</div>
@@ -987,6 +988,20 @@ function updateNavBadges() {
     const el = document.getElementById('badge-'+k);
     if (el) el.textContent = v;
   });
+  renderCustomNavItems();
+}
+
+/* Render custom inhoudstypen in the sidebar nav */
+function renderCustomNavItems() {
+  const container = document.getElementById('customNavItems');
+  if (!container) return;
+  const customKeys = Object.keys(data).filter(k => k.startsWith('custom_'));
+  container.innerHTML = customKeys.map(k => {
+    const name = data._meta?.names?.[k] || k;
+    const count = (data[k].cards || []).length;
+    const isActive = currentPage === k;
+    return `<div class="nav-item ${isActive?'active':''}" data-page="${k}" onclick="navigate('${k}')"><i class="ti ti-folder"></i> ${esc(name)} <span class="nav-badge">${count}</span></div>`;
+  }).join('');
 }
 
 /* Content search — searches card titles + subtitles + body */
@@ -1121,9 +1136,9 @@ function renderDashboard(area) {
         <div class="content-type-card" onclick="navigate('${c.key}')" style="cursor:pointer">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
             <div class="ct-icon ${c.color}"><i class="ti ${c.icon}"></i></div>
-            <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
-              <div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px" onclick="renameContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Naam wijzigen"><i class="ti ti-pencil" style="font-size:12px"></i></div>
-              ${c.custom ? `<div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px;color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="deleteContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Verwijderen"><i class="ti ti-trash" style="font-size:12px"></i></div>` : ''}
+            <div style="display:flex;gap:6px">
+              <div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px" onclick="event.stopPropagation();renameContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Naam wijzigen"><i class="ti ti-pencil" style="font-size:12px;pointer-events:none"></i></div>
+              ${c.custom ? `<div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px;color:var(--red);border-color:rgba(220,38,38,0.3)" onclick="event.stopPropagation();deleteContentType('${c.key}','${esc(c.name).replace(/'/g,"\\'")}')" title="Verwijderen"><i class="ti ti-trash" style="font-size:12px;pointer-events:none"></i></div>` : ''}
             </div>
           </div>
           <div class="ct-name" id="ctname-${c.key}">${esc(c.name)}</div>
@@ -1236,10 +1251,11 @@ function updateCharCount(key, val, max) {
 ══════════════════════════════════════════════════════════ */
 function renderCardListEditor(area, section, title, listLabel, icon, canAdd) {
   const cards = data[section].cards;
+  const isCustom = section.startsWith('custom_');
   area.innerHTML = `
     <div class="page-header">
       <div>
-        <div class="page-type-label"><i class="ti ${icon}"></i> Inhoudstype</div>
+        <div class="page-type-label"><i class="ti ${icon}"></i> Inhoudstype${isCustom?' (eigen)':''}</div>
         <div class="page-title-big">${esc(title)}</div>
         <div class="page-meta">${cards.length} item${cards.length!==1?'s':''} · kaartweergave</div>
       </div>
@@ -1247,6 +1263,10 @@ function renderCardListEditor(area, section, title, listLabel, icon, canAdd) {
         <div class="topbar-btn" onclick="navigate('dashboard')"><i class="ti ti-arrow-left"></i> Terug</div>
       </div>
     </div>
+    ${isCustom ? `<div class="info-banner" style="border-color:rgba(217,119,6,0.3);background:rgba(217,119,6,0.06)">
+      <i class="ti ti-alert-circle" style="color:var(--warn)"></i>
+      <div>Eigen inhoudstypen worden opgeslagen in het CMS, maar verschijnen pas in de IVB-app nadat een ontwikkelaar de app heeft aangepast om dit type weer te geven. Voor nu kunt u de kaarten alvast invullen.</div>
+    </div>` : ''}
     <div class="card-list" id="cardList-${section}">
       ${cards.map((c,i) => renderCardItem(section, c, i)).join('')}
     </div>
@@ -1270,8 +1290,8 @@ function renderCardItem(section, card, idx) {
         <div class="card-item-sub">${esc(card.subtitle||'')}</div>
       </div>
       <div class="card-item-actions">
-        <div class="ci-btn" onclick="event.stopPropagation();duplicateCard('${section}',${idx})" title="Dupliceer"><i class="ti ti-copy"></i></div>
-        <div class="ci-btn del" onclick="event.stopPropagation();confirmDelete('Kaart verwijderen','Wilt u &ldquo;${esc(card.title)}&rdquo; permanent verwijderen?',()=>deleteCard('${section}',${idx}))" title="Verwijder"><i class="ti ti-trash"></i></div>
+        <div class="ci-btn" onclick="event.stopPropagation();duplicateCard('${section}',${idx})" title="Dupliceer"><i class="ti ti-copy" style="pointer-events:none"></i></div>
+        <div class="ci-btn del" onclick="event.stopPropagation();confirmDelete('Kaart verwijderen','Wilt u &ldquo;${esc(card.title)}&rdquo; permanent verwijderen?',()=>deleteCard('${section}',${idx}))" title="Verwijder"><i class="ti ti-trash" style="pointer-events:none"></i></div>
       </div>
       <i class="ti ti-chevron-down ci-chevron"></i>
     </div>
@@ -1398,6 +1418,7 @@ function toggleCardItem(header) {
 function addCard(section) {
   const id = 'card_' + Date.now();
   data[section].cards.push({ id, icon: 'ti-circle', color: 'ic-sky', title: 'Nieuwe kaart', subtitle: 'Subtitel', body: '' });
+  triggerAutoSave(section);
   renderPage(section);
   // open the new card
   setTimeout(() => {
@@ -1412,12 +1433,14 @@ function duplicateCard(section, idx) {
   clone.id = clone.id + '_copy';
   clone.title += ' (kopie)';
   data[section].cards.splice(idx+1, 0, clone);
+  triggerAutoSave(section);
   renderPage(section);
   showToast('Kaart gedupliceerd','ti-copy');
 }
 
 function deleteCard(section, idx) {
   data[section].cards.splice(idx, 1);
+  triggerAutoSave(section);
   renderPage(section);
   showToast('Kaart verwijderd','ti-trash');
 }
@@ -1854,6 +1877,9 @@ function openNewTypeModal() {
     <div style="margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5">
       Nieuwe inhoudstypen worden als kaarten-lijst aangemaakt. Geef een naam op om te beginnen.
     </div>
+    <div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.5">
+      <strong style="color:var(--warn)">Let op:</strong> Eigen inhoudstypen worden in het CMS opgeslagen, maar verschijnen pas in de IVB-app nadat een ontwikkelaar de app aanpast om dit type weer te geven.
+    </div>
     <div style="margin-bottom:10px">
       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:5px">Naam</div>
       <input class="input" id="newTypeName" placeholder="bijv. Nieuws, FAQ, Documenten..." style="width:100%">
@@ -1874,6 +1900,7 @@ function openNewTypeModal() {
     document.getElementById('confirmDeleteBtn').textContent = 'Verwijderen';
     showToast(`"${name}" aangemaakt — kies een sectie om inhoud toe te voegen`, 'ti-check');
     renderDashboard(document.getElementById('editorArea'));
+    renderCustomNavItems();
   };
   setTimeout(() => document.getElementById('newTypeName')?.focus(), 50);
 }
