@@ -776,19 +776,18 @@ body {
   <div class="sidebar-section-label">Inhoudstypen</div>
   <div id="navItems">
     <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-    <div class="nav-item" data-page="home" onclick="navigate('home')"><i class="ti ti-home"></i> Home pagina <span class="nav-badge">1</span></div>
-    <div class="nav-item" data-page="team" onclick="navigate('team')"><i class="ti ti-users"></i> Behandelteam <span class="nav-badge">9</span></div>
-    <div class="nav-item" data-page="programma" onclick="navigate('programma')"><i class="ti ti-calendar"></i> Dagprogramma <span class="nav-badge">14</span></div>
-    <div class="nav-item" data-page="regels" onclick="navigate('regels')"><i class="ti ti-clipboard-list"></i> Regels &amp; Visie <span class="nav-badge">6</span></div>
-    <div class="nav-item" data-page="contact" onclick="navigate('contact')"><i class="ti ti-phone"></i> Contact <span class="nav-badge">3</span></div>
+    <div class="nav-item" data-page="home" onclick="navigate('home')"><i class="ti ti-home"></i> Home pagina <span class="nav-badge" id="badge-home">1</span></div>
+    <div class="nav-item" data-page="team" onclick="navigate('team')"><i class="ti ti-users"></i> Behandelteam <span class="nav-badge" id="badge-team">…</span></div>
+    <div class="nav-item" data-page="programma" onclick="navigate('programma')"><i class="ti ti-calendar"></i> Dagprogramma <span class="nav-badge" id="badge-programma">…</span></div>
+    <div class="nav-item" data-page="regels" onclick="navigate('regels')"><i class="ti ti-clipboard-list"></i> Regels &amp; Visie <span class="nav-badge" id="badge-regels">…</span></div>
+    <div class="nav-item" data-page="contact" onclick="navigate('contact')"><i class="ti ti-phone"></i> Contact <span class="nav-badge" id="badge-contact">…</span></div>
   </div>
 
   <div class="sidebar-section-label" style="margin-top:8px">Bibliotheek</div>
-  <div class="nav-item" onclick="showToast('Media bibliotheek komt binnenkort','ti-photo')"><i class="ti ti-photo"></i> Media <span class="nav-badge">42</span></div>
-  <div class="nav-item" onclick="showToast('Tokens worden beheerd via JSON','ti-palette')"><i class="ti ti-palette"></i> Tokens</div>
+  <div class="nav-item" data-page="media" onclick="navigate('media')"><i class="ti ti-photo"></i> Media</div>
 
   <div class="sidebar-footer">
-    <div class="nav-item" onclick="showToast('Instellingen worden binnenkort toegevoegd','ti-settings')"><i class="ti ti-settings"></i> Instellingen</div>
+    <div class="nav-item" data-page="instellingen" onclick="navigate('instellingen')"><i class="ti ti-settings"></i> Instellingen</div>
   </div>
 </aside>
 
@@ -842,6 +841,9 @@ body {
         <div class="preview-tabs">
           <div class="ptab active" onclick="switchPreviewTab('home',this)">Home</div>
           <div class="ptab" onclick="switchPreviewTab('team',this)">Team</div>
+          <div class="ptab" onclick="switchPreviewTab('programma',this)">Prog</div>
+          <div class="ptab" onclick="switchPreviewTab('regels',this)">Regels</div>
+          <div class="ptab" onclick="switchPreviewTab('contact',this)">Contact</div>
         </div>
       </div>
       <div class="preview-body">
@@ -964,15 +966,71 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => {
     n.classList.toggle('active', n.dataset.page === page);
   });
-  const labels = { dashboard:'Alle inhoudstypen', home:'Home pagina', team:'Behandelteam', programma:'Dagprogramma', regels:'Regels & Visie', contact:'Contact' };
+  const labels = { dashboard:'Alle inhoudstypen', home:'Home pagina', team:'Behandelteam', programma:'Dagprogramma', regels:'Regels & Visie', contact:'Contact', media:'Media', instellingen:'Instellingen' };
   document.getElementById('breadcrumbCurrent').textContent = labels[page] || page;
   renderPage(page);
 }
 
-function filterNav(q) {
-  document.querySelectorAll('#navItems .nav-item').forEach(n => {
-    n.style.display = n.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+function updateNavBadges() {
+  const b = {
+    home: 1,
+    team: data.team.cards.length,
+    programma: data.programma.cards.length,
+    regels: data.regels.cards.length,
+    contact: data.contact.persons.length,
+  };
+  Object.entries(b).forEach(([k,v]) => {
+    const el = document.getElementById('badge-'+k);
+    if (el) el.textContent = v;
   });
+}
+
+/* Content search — searches card titles + subtitles + body */
+function filterNav(q) {
+  const lq = q.toLowerCase();
+  if (!lq) {
+    document.querySelectorAll('#navItems .nav-item').forEach(n => n.style.display = '');
+    document.getElementById('searchResultsDropdown')?.remove();
+    return;
+  }
+
+  /* filter nav items by name */
+  document.querySelectorAll('#navItems .nav-item').forEach(n => {
+    n.style.display = n.textContent.toLowerCase().includes(lq) ? '' : 'none';
+  });
+
+  /* search actual content */
+  const hits = [];
+  const allCards = [
+    ...data.team.cards.map(c => ({section:'Behandelteam', page:'team', title:c.title, sub:c.subtitle||'', body:c.body||''})),
+    ...data.programma.cards.map(c => ({section:'Dagprogramma', page:'programma', title:c.title, sub:c.subtitle||'', body:c.body||''})),
+    ...data.regels.cards.map(c => ({section:'Regels & Visie', page:'regels', title:c.title, sub:c.subtitle||'', body:c.body||''})),
+    ...data.contact.persons.map(p => ({section:'Contact', page:'contact', title:p.name, sub:p.role||'', body:p.info||''})),
+    {section:'Home', page:'home', title:'Welkomsttitel', sub:data.home.hero_ward||'', body:data.home.hero_title+' '+data.home.hero_body},
+  ];
+  allCards.forEach(c => {
+    if ((c.title+c.sub+c.body).toLowerCase().includes(lq)) hits.push(c);
+  });
+
+  /* show dropdown below search box */
+  let dd = document.getElementById('searchResultsDropdown');
+  if (!dd) {
+    dd = document.createElement('div');
+    dd.id = 'searchResultsDropdown';
+    dd.style.cssText = 'position:absolute;left:8px;right:8px;top:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:50;max-height:220px;overflow-y:auto;margin-top:4px;';
+    document.querySelector('.sidebar-search').style.position = 'relative';
+    document.querySelector('.sidebar-search').appendChild(dd);
+  }
+  if (!hits.length) {
+    dd.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:var(--text3)">Geen resultaten</div>';
+  } else {
+    dd.innerHTML = hits.slice(0,8).map(h => `
+      <div onclick="navigate('${h.page}');document.getElementById('sidebarSearch').value='';filterNav('');" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--tr)" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <div style="font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em">${h.section}</div>
+        <div style="font-size:12.5px;font-weight:600;color:var(--text1)">${esc(h.title)}</div>
+        ${h.sub ? `<div style="font-size:11px;color:var(--text3)">${esc(h.sub)}</div>` : ''}
+      </div>`).join('');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -991,6 +1049,8 @@ function renderPage(page) {
   else if (page === 'programma') renderCardListEditor(area, 'programma', 'Dagprogramma', 'Kaarten', 'ti-calendar', true);
   else if (page === 'regels') renderCardListEditor(area, 'regels', 'Regels & Visie', 'Kaarten', 'ti-clipboard-list', true);
   else if (page === 'contact') renderContactEditor(area);
+  else if (page === 'media') renderMediaPage(area);
+  else if (page === 'instellingen') renderInstellingenPage(area);
 
   updatePhonePreview();
 }
@@ -1000,12 +1060,22 @@ function renderPage(page) {
 ══════════════════════════════════════════════════════════ */
 function renderDashboard(area) {
   const cards = [
-    { key:'home', icon:'ti-home', color:'bg-coral', name:'Home pagina', desc:'Welkomstscherm & hoofdmenu', count: 1 },
-    { key:'team', icon:'ti-users', color:'bg-pink', name:'Behandelteam', desc:'Behandelaars & rollen', count: data.team.cards.length },
-    { key:'programma', icon:'ti-calendar', color:'bg-gold', name:'Dagprogramma', desc:'Activiteiten & sport', count: data.programma.cards.length },
-    { key:'regels', icon:'ti-clipboard-list', color:'bg-teal', name:'Regels & Visie', desc:'Huisregels en afdelingsvisie', count: data.regels.cards.length },
-    { key:'contact', icon:'ti-phone', color:'bg-sky', name:'Contact', desc:'Nummers, locatie & openingstijden', count: data.contact.persons.length },
+    { key:'home', icon:'ti-home', color:'bg-coral', name: data._meta?.names?.home || 'Home pagina', desc:'Welkomstscherm & hoofdmenu', count: 1 },
+    { key:'team', icon:'ti-users', color:'bg-pink', name: data._meta?.names?.team || 'Behandelteam', desc:'Behandelaars & rollen', count: data.team.cards.length },
+    { key:'programma', icon:'ti-calendar', color:'bg-gold', name: data._meta?.names?.programma || 'Dagprogramma', desc:'Activiteiten & sport', count: data.programma.cards.length },
+    { key:'regels', icon:'ti-clipboard-list', color:'bg-teal', name: data._meta?.names?.regels || 'Regels & Visie', desc:'Huisregels en afdelingsvisie', count: data.regels.cards.length },
+    { key:'contact', icon:'ti-phone', color:'bg-sky', name: data._meta?.names?.contact || 'Contact', desc:'Nummers, locatie & openingstijden', count: data.contact.persons.length },
   ];
+
+  function lastEdited(key) {
+    const m = data._meta?.edits?.[key];
+    if (!m) return 'bijgewerkt zojuist';
+    const d = new Date(m.ts);
+    const now = new Date();
+    const diff = Math.round((now-d)/60000);
+    const when = diff < 2 ? 'zojuist' : diff < 60 ? diff+'m geleden' : diff < 1440 ? Math.round(diff/60)+'u geleden' : d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+    return `bijgewerkt ${when} door ${m.user.split('@')[0]}`;
+  }
 
   area.innerHTML = `
     <div class="page-header">
@@ -1015,7 +1085,7 @@ function renderDashboard(area) {
         <div class="page-meta">IVB High Care Informatiegids CMS</div>
       </div>
       <div class="page-actions">
-        <div class="topbar-btn" onclick="showToast('Nieuw inhoudstype aanmaken — binnenkort beschikbaar','ti-plus')"><i class="ti ti-plus"></i> Nieuw type</div>
+        <div class="topbar-btn" onclick="openNewTypeModal()"><i class="ti ti-plus"></i> Nieuw type</div>
       </div>
     </div>
     <div class="info-banner">
@@ -1024,13 +1094,16 @@ function renderDashboard(area) {
     </div>
     <div class="content-types-grid">
       ${cards.map(c => `
-        <div class="content-type-card" onclick="navigate('${c.key}')">
-          <div class="ct-icon ${c.color}"><i class="ti ${c.icon}"></i></div>
-          <div class="ct-name">${esc(c.name)}</div>
-          <div class="ct-desc">${esc(c.desc)}</div>
+        <div class="content-type-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+            <div class="ct-icon ${c.color}" onclick="navigate('${c.key}')"><i class="ti ${c.icon}"></i></div>
+            <div class="topbar-btn" style="font-size:11px;padding:3px 9px;margin-top:2px" onclick="renameContentType('${c.key}','${esc(c.name)}')" title="Naam wijzigen"><i class="ti ti-pencil" style="font-size:12px"></i></div>
+          </div>
+          <div class="ct-name" id="ctname-${c.key}" onclick="navigate('${c.key}')" style="cursor:pointer">${esc(c.name)}</div>
+          <div class="ct-desc" onclick="navigate('${c.key}')">${esc(c.desc)}</div>
           <div class="ct-footer">
-            <span class="ct-count">${c.count} item${c.count !== 1 ? 's' : ''} · bijgewerkt zojuist</span>
-            <span class="ct-edit">Bewerken <i class="ti ti-chevron-right" style="font-size:13px"></i></span>
+            <span class="ct-count">${c.count} item${c.count !== 1 ? 's' : ''} · ${lastEdited(c.key)}</span>
+            <span class="ct-edit" onclick="navigate('${c.key}')">Bewerken <i class="ti ti-chevron-right" style="font-size:13px"></i></span>
           </div>
         </div>
       `).join('')}
@@ -1270,7 +1343,7 @@ function renderScheduleField(section, idx, schedule) {
 /* ── card mutations ── */
 function updateCard(section, idx, key, val) {
   data[section].cards[idx][key] = val;
-  triggerAutoSave();
+  triggerAutoSave(section);
   updatePhonePreview();
 }
 
@@ -1497,17 +1570,23 @@ function switchPreviewTab(tab, el) {
 
 function updatePhonePreview() {
   const screen = document.getElementById('phoneScreen');
+  const bgMap={'ic-sky':'#2980b9','ic-pink':'#a01860','ic-teal':'#1a8080','ic-gold':'#b8860b','ic-coral':'#b84a10','ic-purple':'#4a2a7a','ic-navy':'#1a2060','ic-peach':'#b85530','ic-red':'#8b1a1a','ic-green':'#1a5a2a'};
+  const bg = c => bgMap[c] || '#2980b9';
+
+  const navBar = (active) => `<div class="ph-nav">
+    ${[['home','ti-home','Home'],['team','ti-users','Team'],['programma','ti-calendar','Prog'],['regels','ti-clipboard-list','Regels'],['contact','ti-phone','Contact']].map(([k,ic,lbl])=>`
+    <div class="ph-nav-item ${active===k?'active':''}"><i class="ti ${ic}"></i><span>${lbl}</span></div>`).join('')}
+  </div>`;
+
+  const hdr = `<div class="ph-header">
+    <div class="ph-logo"><i class="ti ti-heart-handshake" style="font-size:10px;color:#fff"></i></div>
+    <div><div class="ph-name">${esc(data.home.hero_ward||'IVB High Care')}</div><div class="ph-sub">Informatiegids</div></div>
+    <div class="ph-icons"><div class="ph-ic">🔍</div><div class="ph-ic">🌙</div></div>
+  </div>`;
+
   if (previewTab === 'home') {
     const h = data.home;
-    screen.innerHTML = `
-      <div class="ph-header">
-        <div class="ph-logo"><i class="ti ti-heart-handshake" style="font-size:10px;color:#fff"></i></div>
-        <div>
-          <div class="ph-name">De Spreng</div>
-          <div class="ph-sub">Informatiegids</div>
-        </div>
-        <div class="ph-icons"><div class="ph-ic">🔍</div><div class="ph-ic">🌙</div></div>
-      </div>
+    screen.innerHTML = hdr + `
       <div class="ph-content">
         <div class="ph-hero">
           <div class="ph-hero-icon"><i class="ti ti-heart-handshake"></i></div>
@@ -1515,65 +1594,259 @@ function updatePhonePreview() {
           <div class="ph-hero-ward">${esc(h.hero_ward)}</div>
           <div class="ph-hero-body">${esc(h.hero_body)}</div>
         </div>
-        <div class="ph-notice">
-          <i class="ti ti-info-circle"></i>
-          <p><strong>Vragen?</strong> ${esc(h.notice_text)}</p>
-        </div>
+        <div class="ph-notice"><i class="ti ti-info-circle"></i><p><strong>Vragen?</strong> ${esc(h.notice_text)}</p></div>
         <div class="ph-label">Snel naar</div>
         <div class="ph-grid">
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#e84f8c">👥</div><div class="ph-tile-label">Behandelteam</div><div class="ph-tile-sub">Uw behandelaars</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#3dbfbf">📅</div><div class="ph-tile-label">Dagprogramma</div><div class="ph-tile-sub">Activiteiten & sport</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f5c842">📋</div><div class="ph-tile-label">Regels & Visie</div><div class="ph-tile-sub">Huisregels afdeling</div></div>
-          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f07a3a">📞</div><div class="ph-tile-label">Contact</div><div class="ph-tile-sub">Nummers & tijden</div></div>
+          <div class="ph-tile"><div class="ph-tile-icon" style="color:#e84f8c">👥</div><div class="ph-tile-label">${esc(data._meta?.names?.team||'Behandelteam')}</div></div>
+          <div class="ph-tile"><div class="ph-tile-icon" style="color:#3dbfbf">📅</div><div class="ph-tile-label">${esc(data._meta?.names?.programma||'Dagprogramma')}</div></div>
+          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f5c842">📋</div><div class="ph-tile-label">${esc(data._meta?.names?.regels||'Regels & Visie')}</div></div>
+          <div class="ph-tile"><div class="ph-tile-icon" style="color:#f07a3a">📞</div><div class="ph-tile-label">${esc(data._meta?.names?.contact||'Contact')}</div></div>
         </div>
-      </div>
-      <div class="ph-nav">
-        <div class="ph-nav-item active"><i class="ti ti-home"></i><span>Home</span></div>
-        <div class="ph-nav-item"><i class="ti ti-users"></i><span>Team</span></div>
-        <div class="ph-nav-item"><i class="ti ti-calendar"></i><span>Programma</span></div>
-        <div class="ph-nav-item"><i class="ti ti-clipboard-list"></i><span>Regels</span></div>
-        <div class="ph-nav-item"><i class="ti ti-phone"></i><span>Contact</span></div>
-      </div>`;
-  } else {
-    const cards = data.team.cards.slice(0,4);
-    screen.innerHTML = `
-      <div class="ph-header">
-        <div class="ph-logo"><i class="ti ti-heart-handshake" style="font-size:10px;color:#fff"></i></div>
-        <div><div class="ph-name">De Spreng</div><div class="ph-sub">Informatiegids</div></div>
-        <div class="ph-icons"><div class="ph-ic">🔍</div><div class="ph-ic">🌙</div></div>
-      </div>
-      <div class="ph-content">
-        <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">Behandelteam</div>
-        ${cards.map(c => {
-          const bgMap={'ic-sky':'#2980b9','ic-pink':'#a01860','ic-teal':'#1a8080','ic-gold':'#b8860b','ic-coral':'#b84a10','ic-purple':'#4a2a7a','ic-navy':'#1a2060','ic-peach':'#b85530','ic-red':'#8b1a1a','ic-green':'#1a5a2a'};
-          const bg = bgMap[c.color] || '#2980b9';
-          return `<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-            <div style="width:28px;height:28px;border-radius:7px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
-            <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="ph-nav">
-        <div class="ph-nav-item"><i class="ti ti-home"></i><span>Home</span></div>
-        <div class="ph-nav-item active"><i class="ti ti-users"></i><span>Team</span></div>
-        <div class="ph-nav-item"><i class="ti ti-calendar"></i><span>Programma</span></div>
-        <div class="ph-nav-item"><i class="ti ti-clipboard-list"></i><span>Regels</span></div>
-        <div class="ph-nav-item"><i class="ti ti-phone"></i><span>Contact</span></div>
-      </div>`;
+      </div>` + navBar('home');
+
+  } else if (previewTab === 'team') {
+    screen.innerHTML = hdr + `<div class="ph-content">
+      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.team||'Behandelteam')}</div>
+      ${data.team.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
+        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
+      </div>`).join('')}
+    </div>` + navBar('team');
+
+  } else if (previewTab === 'programma') {
+    screen.innerHTML = hdr + `<div class="ph-content">
+      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.programma||'Dagprogramma')}</div>
+      ${data.programma.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
+        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
+      </div>`).join('')}
+    </div>` + navBar('programma');
+
+  } else if (previewTab === 'regels') {
+    screen.innerHTML = hdr + `<div class="ph-content">
+      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.regels||'Regels & Visie')}</div>
+      ${data.regels.cards.slice(0,5).map(c=>`<div style="display:flex;align-items:center;gap:8px;background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+        <div style="width:28px;height:28px;border-radius:7px;background:${bg(c.color)};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${c.icon}" style="font-size:13px;color:#fff"></i></div>
+        <div><div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(c.title)}</div><div style="font-size:7.5px;color:#8b95b0;margin-top:1px">${esc(c.subtitle)}</div></div>
+      </div>`).join('')}
+    </div>` + navBar('regels');
+
+  } else if (previewTab === 'contact') {
+    screen.innerHTML = hdr + `<div class="ph-content">
+      <div class="ph-label" style="margin-bottom:8px;font-size:8.5px;color:#eef1f8;font-weight:700">${esc(data._meta?.names?.contact||'Contact')}</div>
+      ${data.contact.persons.map(p=>`<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 10px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:#eef1f8">${esc(p.name)}</div>
+        <div style="font-size:7.5px;color:#8b95b0;margin-top:2px">${esc(p.role)}</div>
+        <div style="font-size:7.5px;color:#4ab8e8;margin-top:3px">${esc(p.info)}</div>
+      </div>`).join('')}
+      ${data.contact.tijden.length ? `<div style="background:#1c2235;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 10px;margin-top:2px">
+        ${data.contact.tijden.map(t=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:7.5px;color:#8b95b0">${esc(t.label)}</span><span style="font-size:7.5px;color:#eef1f8;font-weight:600">${esc(t.tijd)}</span></div>`).join('')}
+      </div>` : ''}
+    </div>` + navBar('contact');
   }
 }
 
 /* ══════════════════════════════════════════════════════════
-   AUTO SAVE
+   MEDIA PAGE
+══════════════════════════════════════════════════════════ */
+function renderMediaPage(area) {
+  const images = [
+    { name: 'icon-512.png', path: '../icon-512.png', desc: 'App icoon' },
+    { name: 'icon-192.png', path: '../icon-192.png', desc: 'PWA icoon' },
+  ];
+  area.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-type-label"><i class="ti ti-photo"></i> Bibliotheek</div>
+        <div class="page-title-big">Media</div>
+        <div class="page-meta">Afbeeldingen die in de app worden gebruikt</div>
+      </div>
+      <div class="page-actions">
+        <div class="topbar-btn" onclick="navigate('dashboard')"><i class="ti ti-arrow-left"></i> Terug</div>
+      </div>
+    </div>
+    <div class="info-banner">
+      <i class="ti ti-info-circle"></i>
+      <div>Afbeeldingen worden beheerd via de repository. Upload bestanden via GitHub of gebruik de Netlify Large Media functie. De bestanden hieronder zijn beschikbaar in de app.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:8px">
+      ${images.map(img => `
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+          <div style="background:var(--surface);height:120px;display:flex;align-items:center;justify-content:center;padding:16px">
+            <img src="${img.path}" alt="${img.name}" style="max-width:100%;max-height:88px;object-fit:contain;border-radius:8px" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div style="display:none;flex-direction:column;align-items:center;color:var(--text3)"><i class="ti ti-photo" style="font-size:28px"></i><span style="font-size:10px;margin-top:4px">Niet gevonden</span></div>
+          </div>
+          <div style="padding:10px 12px;border-top:1px solid var(--border)">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text1)">${img.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${img.desc}</div>
+          </div>
+        </div>`).join('')}
+      <div style="background:var(--bg2);border:2px dashed var(--border2);border-radius:var(--radius);height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--tr)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="showToast('Upload via GitHub repository of Netlify Large Media','ti-upload')">
+        <i class="ti ti-upload" style="font-size:24px;color:var(--text3)"></i>
+        <div style="font-size:12px;font-weight:600;color:var(--text3)">Afbeelding toevoegen</div>
+        <div style="font-size:11px;color:var(--text3)">via GitHub</div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INSTELLINGEN PAGE
+══════════════════════════════════════════════════════════ */
+function renderInstellingenPage(area) {
+  const s = data._meta?.settings || {};
+  area.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-type-label"><i class="ti ti-settings"></i> Beheer</div>
+        <div class="page-title-big">Instellingen</div>
+        <div class="page-meta">App-brede instellingen voor IVB High Care</div>
+      </div>
+      <div class="page-actions">
+        <div class="topbar-btn" onclick="navigate('dashboard')"><i class="ti ti-arrow-left"></i> Terug</div>
+      </div>
+    </div>
+
+    <div class="section-group" style="margin-bottom:16px">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-app-window sg-icon"></i>
+        <div class="sg-title">App-identiteit</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        <div class="field">
+          <div class="field-label">App-naam (zichtbaar in browser-tab)</div>
+          <input class="input" id="set-appname" value="${esc(s.appName||'IVB High Care — Informatiegids')}" placeholder="App naam">
+        </div>
+        <div class="field">
+          <div class="field-label">Afdeling</div>
+          <input class="input" id="set-ward" value="${esc(s.ward||data.home.hero_ward||'')}" placeholder="bijv. De Spreng ART" oninput="data.home.hero_ward=this.value;triggerAutoSave();updatePhonePreview()">
+          <div class="field-hint">Dit veld is gekoppeld aan het Home-scherm.</div>
+        </div>
+        <div class="field">
+          <div class="field-label">Welkomsttitel</div>
+          <input class="input" value="${esc(data.home.hero_title)}" oninput="data.home.hero_title=this.value;triggerAutoSave();updatePhonePreview()">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-group" style="margin-bottom:16px">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-palette sg-icon"></i>
+        <div class="sg-title">Standaard thema</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        <div class="field">
+          <div class="field-label">Opstartthema</div>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2)">
+              <input type="radio" name="deftheme" value="light" ${!s.defaultTheme||s.defaultTheme==='light'?'checked':''} onchange="saveThemePref('light')"> Licht
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2)">
+              <input type="radio" name="deftheme" value="dark" ${s.defaultTheme==='dark'?'checked':''} onchange="saveThemePref('dark')"> Donker
+            </label>
+          </div>
+          <div class="field-hint">Dit wordt opgeslagen in de browser.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-group" style="border-color:rgba(220,38,38,0.3)">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)" style="color:var(--red)">
+        <i class="ti ti-alert-triangle sg-icon" style="color:var(--red)"></i>
+        <div class="sg-title" style="color:var(--red)">Gevarenzone</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        <div class="field">
+          <div class="field-label">Lokale opslag wissen</div>
+          <div class="field-hint" style="margin-bottom:10px">Verwijdert alle niet-gepubliceerde wijzigingen en reset naar de standaardinhoud. Kan niet ongedaan worden gemaakt.</div>
+          <div class="topbar-btn" style="color:var(--red);border-color:rgba(220,38,38,0.4);display:inline-flex" onclick="confirmDelete('Lokale opslag wissen?','Dit verwijdert alle lokaal opgeslagen wijzigingen. Gepubliceerde inhoud op de live site blijft onaangetast.',()=>{localStorage.removeItem(\'ivb-cms-data\');location.reload();})">
+            <i class="ti ti-trash"></i> Opslag wissen & herladen
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function saveThemePref(theme) {
+  if (!data._meta) data._meta = {};
+  if (!data._meta.settings) data._meta.settings = {};
+  data._meta.settings.defaultTheme = theme;
+  triggerAutoSave();
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENAME CONTENT TYPE
+══════════════════════════════════════════════════════════ */
+function renameContentType(key, currentName) {
+  const name = prompt(`Naam wijzigen voor "${currentName}":`, currentName);
+  if (!name || name.trim() === currentName) return;
+  if (!data._meta) data._meta = {};
+  if (!data._meta.names) data._meta.names = {};
+  data._meta.names[key] = name.trim();
+  triggerAutoSave();
+  renderDashboard(document.getElementById('editorArea'));
+  updateNavBadges();
+  showToast(`Naam gewijzigd naar "${name.trim()}"`, 'ti-check');
+}
+
+/* ══════════════════════════════════════════════════════════
+   NEW TYPE MODAL
+══════════════════════════════════════════════════════════ */
+function openNewTypeModal() {
+  /* Simple inline modal using existing modal system */
+  document.querySelector('#deleteModal .modal-title').textContent = 'Nieuw inhoudstype aanmaken';
+  document.getElementById('deleteModalBody').innerHTML = `
+    <div style="margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5">
+      Nieuwe inhoudstypen worden als kaarten-lijst aangemaakt. Geef een naam op om te beginnen.
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:5px">Naam</div>
+      <input class="input" id="newTypeName" placeholder="bijv. Nieuws, FAQ, Documenten..." style="width:100%">
+    </div>`;
+  deleteCallback = null;
+  document.getElementById('deleteModal').classList.add('open');
+  document.getElementById('confirmDeleteBtn').textContent = 'Aanmaken';
+  document.getElementById('confirmDeleteBtn').onclick = () => {
+    const name = document.getElementById('newTypeName')?.value?.trim();
+    if (!name) { showToast('Vul een naam in','ti-alert-triangle'); return; }
+    const key = 'custom_' + name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + Date.now();
+    data[key] = { cards: [] };
+    if (!data._meta) data._meta = {};
+    if (!data._meta.names) data._meta.names = {};
+    data._meta.names[key] = name;
+    triggerAutoSave();
+    closeDeleteModal();
+    document.getElementById('confirmDeleteBtn').textContent = 'Verwijderen';
+    showToast(`"${name}" aangemaakt — kies een sectie om inhoud toe te voegen`, 'ti-check');
+    renderDashboard(document.getElementById('editorArea'));
+  };
+  setTimeout(() => document.getElementById('newTypeName')?.focus(), 50);
+}
+
+/* ══════════════════════════════════════════════════════════
+   META TRACKING — record who edited what and when
+══════════════════════════════════════════════════════════ */
+function recordEdit(section) {
+  if (!currentUser) return;
+  if (!data._meta) data._meta = {};
+  if (!data._meta.edits) data._meta.edits = {};
+  data._meta.edits[section] = { ts: new Date().toISOString(), user: currentUser.email || 'onbekend' };
+}
+
+/* ── AUTO SAVE
 ══════════════════════════════════════════════════════════ */
 /* ── unsaved changes tracker ── */
 let hasUnsavedChanges = false;
 
-function triggerAutoSave() {
+function triggerAutoSave(section) {
+  if (section) recordEdit(section);
   hasUnsavedChanges = true;
   const pill = document.getElementById('statusPill');
   pill.classList.add('saving');
   pill.innerHTML = '<div class="status-dot"></div> Niet gepubliceerd';
+  updateNavBadges();
   // always persist locally so nothing is lost on refresh
   try { localStorage.setItem('ivb-cms-data', JSON.stringify(data)); } catch(e) {}
 }
@@ -1678,7 +1951,12 @@ function confirmDelete(title, body, cb) {
   document.getElementById('deleteModal').classList.add('open');
   document.getElementById('confirmDeleteBtn').onclick = () => { cb(); closeDeleteModal(); };
 }
-function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); deleteCallback = null; }
+function closeDeleteModal() { 
+  document.getElementById('deleteModal').classList.remove('open'); 
+  deleteCallback = null; 
+  const btn = document.getElementById('confirmDeleteBtn');
+  if (btn) btn.textContent = 'Verwijderen';
+}
 
 /* ══════════════════════════════════════════════════════════
    PREVIEW
@@ -1735,12 +2013,22 @@ function bootCMS() {
     document.getElementById('themeIcon').className = 'ti ti-sun';
   }
   navigate('dashboard');
+  updateNavBadges();
 
   /* Show logged-in user in topbar */
   const email = currentUser.email || '';
   document.getElementById('userEmail').textContent = email;
   document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
 }
+
+/* close search dropdown when clicking outside */
+document.addEventListener('click', (e) => {
+  const ss = document.querySelector('.sidebar-search');
+  const dd = document.getElementById('searchResultsDropdown');
+  if (dd && ss && !ss.contains(e.target)) {
+    dd.remove();
+  }
+});
 
 window.netlifyIdentity.init({ APIUrl: 'https://ivb-highcare-v2.netlify.app/.netlify/identity' });
 </script>
