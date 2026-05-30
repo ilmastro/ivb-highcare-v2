@@ -345,326 +345,14 @@
 
   </main>
 
-  <!--
-    QR generation: pure JS, no external dependencies.
-    Using a tiny self-contained QR encoder (Reed–Solomon + matrix drawing).
-    All data stays local; nothing leaves the browser.
-  -->
+  <!-- qrcodejs — battle-tested QR library, served from cdnjs (no tracking) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
-  /* ─────────────────────────────────────────────────────────
-     MINIMAL QR CODE ENCODER
-     Based on the public-domain QR spec. Supports alphanumeric
-     and byte mode for URLs. Generates an HTML5 canvas.
-  ────────────────────────────────────────────────────────── */
-
-  /* We'll use the well-known qrcodejs approach via a tiny inline lib.
-     To keep zero external dependencies, we implement the core here. */
-
-  // ── Galois Field GF(256) arithmetic ──────────────────────
-  const GF_EXP = new Uint8Array(512);
-  const GF_LOG = new Uint8Array(256);
-  (function() {
-    let x = 1;
-    for (let i = 0; i < 255; i++) {
-      GF_EXP[i] = x;
-      GF_LOG[x] = i;
-      x <<= 1;
-      if (x & 0x100) x ^= 0x11d;
-    }
-    for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
-  })();
-
-  function gfMul(a, b) {
-    if (a === 0 || b === 0) return 0;
-    return GF_EXP[(GF_LOG[a] + GF_LOG[b]) % 255];
-  }
-
-  function gfPolyMul(p, q) {
-    const r = new Uint8Array(p.length + q.length - 1);
-    for (let i = 0; i < p.length; i++)
-      for (let j = 0; j < q.length; j++)
-        r[i + j] ^= gfMul(p[i], q[j]);
-    return r;
-  }
-
-  function gfPolyRem(msg, gen) {
-    let r = new Uint8Array(msg);
-    for (let i = 0; i < msg.length - (gen.length - 1); i++) {
-      if (r[i] === 0) continue;
-      const c = r[i];
-      for (let j = 1; j < gen.length; j++)
-        r[i + j] ^= gfMul(gen[j], c);
-    }
-    return r.slice(-(gen.length - 1));
-  }
-
-  function makeGenerator(n) {
-    let g = new Uint8Array([1]);
-    for (let i = 0; i < n; i++)
-      g = gfPolyMul(g, new Uint8Array([1, GF_EXP[i]]));
-    return g;
-  }
-
-  // ── Version / capacity tables ─────────────────────────────
-  // EC blocks for error correction level M
-  // Format: [total codewords, data codewords, ec per block, blocks]
-  const EC_TABLE = {
-    1:  [26,  16,  10, 1],
-    2:  [44,  28,  16, 1],
-    3:  [70,  44,  26, 1],
-    4:  [100, 64,  18, 2],
-    5:  [134, 86,  24, 2],
-    6:  [172, 108, 16, 4],
-    7:  [196, 124, 18, 4],
-    8:  [242, 154, 22, 4],
-    9:  [292, 182, 22, 5],
-    10: [346, 216, 26, 5],
-  };
-
-  function getVersion(byteLen) {
-    // Data codewords needed for byte mode: indicator(4) + length(8) + data*8, padded to codewords
-    for (let v = 1; v <= 10; v++) {
-      const cap = EC_TABLE[v][1];
-      // byte mode: 2 bytes overhead (mode 4b + length 8b = 1.5 bytes, round to bits)
-      if (cap >= byteLen + 2) return v;
-    }
-    return 10; // max supported
-  }
-
-  // ── Encode bytes ──────────────────────────────────────────
-  function encodeData(text, version) {
-    const bytes = new TextEncoder().encode(text);
-    const dataCapacity = EC_TABLE[version][1];
-    const bits = [];
-    const push = (val, len) => {
-      for (let i = len - 1; i >= 0; i--)
-        bits.push((val >> i) & 1);
-    };
-
-    push(0b0100, 4);          // byte mode indicator
-    push(bytes.length, 8);    // character count
-    for (const b of bytes) push(b, 8);
-
-    // terminator
-    for (let i = 0; i < 4 && bits.length < dataCapacity * 8; i++) bits.push(0);
-
-    // pad to byte boundary
-    while (bits.length % 8) bits.push(0);
-
-    // pad codewords
-    const pads = [0xEC, 0x11];
-    let pi = 0;
-    while (bits.length < dataCapacity * 8) {
-      push(pads[pi++ % 2], 8);
-    }
-
-    const codewords = new Uint8Array(dataCapacity);
-    for (let i = 0; i < dataCapacity; i++) {
-      let b = 0;
-      for (let j = 0; j < 8; j++) b = (b << 1) | bits[i * 8 + j];
-      codewords[i] = b;
-    }
-    return codewords;
-  }
-
-  function addEC(data, version) {
-    const [, dataCW, ecPerBlock, numBlocks] = EC_TABLE[version];
-    const blockSize = Math.floor(dataCW / numBlocks);
-    const larger = dataCW % numBlocks;
-    const gen = makeGenerator(ecPerBlock);
-
-    const dataBlocks = [], ecBlocks = [];
-    let offset = 0;
-    for (let b = 0; b < numBlocks; b++) {
-      const len = blockSize + (b >= numBlocks - larger ? 1 : 0);
-      const block = data.slice(offset, offset + len);
-      offset += len;
-      const msg = new Uint8Array(len + ecPerBlock);
-      msg.set(block);
-      const ec = gfPolyRem(msg, gen);
-      dataBlocks.push(block);
-      ecBlocks.push(ec);
-    }
-
-    // Interleave
-    const result = [];
-    const maxLen = Math.max(...dataBlocks.map(b => b.length));
-    for (let i = 0; i < maxLen; i++)
-      for (const b of dataBlocks) if (i < b.length) result.push(b[i]);
-    for (let i = 0; i < ecPerBlock; i++)
-      for (const b of ecBlocks) if (i < b.length) result.push(b[i]);
-    return new Uint8Array(result);
-  }
-
-  // ── Matrix builder ────────────────────────────────────────
-  function makeMatrix(version) {
-    const size = version * 4 + 17;
-    const m = Array.from({length: size}, () => new Array(size).fill(-1));
-    return m;
-  }
-
-  function setRect(m, r, c, h, w, val) {
-    for (let i = r; i < r + h; i++)
-      for (let j = c; j < c + w; j++)
-        m[i][j] = val;
-  }
-
-  function drawFinder(m, r, c) {
-    setRect(m, r, c, 7, 7, 1);
-    setRect(m, r+1, c+1, 5, 5, 0);
-    setRect(m, r+2, c+2, 3, 3, 1);
-  }
-
-  function drawTiming(m, size) {
-    for (let i = 8; i < size - 8; i++) {
-      m[6][i] = m[i][6] = i % 2 === 0 ? 1 : 0;
-    }
-  }
-
-  function drawAlignment(m, version) {
-    if (version < 2) return;
-    const pos = [6, version * 4 + 13];
-    for (const r of pos) for (const c of pos) {
-      if (m[r][c] !== -1) continue;
-      setRect(m, r-2, c-2, 5, 5, 1);
-      setRect(m, r-1, c-1, 3, 3, 0);
-      m[r][c] = 1;
-    }
-  }
-
-  function reserveFormat(m, size) {
-    // reserve format areas
-    for (let i = 0; i < 9; i++) {
-      if (m[8][i] === -1) m[8][i] = 0;
-      if (m[i][8] === -1) m[i][8] = 0;
-    }
-    for (let i = size - 8; i < size; i++) {
-      if (m[8][i] === -1) m[8][i] = 0;
-      if (m[i][8] === -1) m[i][8] = 0;
-    }
-    m[size - 8][8] = 1; // dark module
-  }
-
-  // Format info for M level, mask 2 (checkerboard)
-  const FORMAT_STRINGS = {
-    0: 0b111011111000100,
-    1: 0b111001011110011,
-    2: 0b111110110101010,
-    3: 0b111100010011101,
-    4: 0b110011000101111,
-    5: 0b110001100011000,
-    6: 0b110110001000001,
-    7: 0b110100101110110,
-  };
-
-  function writeFormat(m, size, mask) {
-    const fmt = FORMAT_STRINGS[mask];
-    const bits = [];
-    for (let i = 14; i >= 0; i--) bits.push((fmt >> i) & 1);
-
-    // Around top-left finder
-    for (let i = 0; i < 6; i++) m[8][i] = bits[i];
-    m[8][7] = bits[6];
-    m[8][8] = bits[7];
-    m[7][8] = bits[8];
-    for (let i = 0; i < 6; i++) m[5 - i][8] = bits[9 + i];
-
-    // Top-right and bottom-left
-    for (let i = 0; i < 8; i++) m[8][size - 1 - i] = bits[i];
-    for (let i = 0; i < 7; i++) m[size - 7 + i][8] = bits[8 + i];
-  }
-
-  function placeData(m, size, codewords) {
-    const bits = [];
-    for (const cw of codewords)
-      for (let i = 7; i >= 0; i--) bits.push((cw >> i) & 1);
-
-    let idx = 0;
-    let up = true;
-
-    for (let col = size - 1; col >= 1; col -= 2) {
-      if (col === 6) col--; // skip timing column
-      for (let rr = 0; rr < size; rr++) {
-        const row = up ? size - 1 - rr : rr;
-        for (let delta = 0; delta <= 1; delta++) {
-          const c = col - delta;
-          if (m[row][c] !== -1) continue;
-          m[row][c] = idx < bits.length ? bits[idx++] : 0;
-        }
-      }
-      up = !up;
-    }
-  }
-
-  function applyMask(m, size, mask) {
-    for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++) {
-        let apply = false;
-        if (mask === 0) apply = (r + c) % 2 === 0;
-        else if (mask === 1) apply = r % 2 === 0;
-        else if (mask === 2) apply = c % 3 === 0;
-        else if (mask === 3) apply = (r + c) % 3 === 0;
-        else if (mask === 4) apply = (Math.floor(r/2) + Math.floor(c/3)) % 2 === 0;
-        else if (mask === 5) apply = (r*c)%2 + (r*c)%3 === 0;
-        else if (mask === 6) apply = ((r*c)%2 + (r*c)%3) % 2 === 0;
-        else if (mask === 7) apply = ((r+c)%2 + (r*c)%3) % 2 === 0;
-        if (apply) m[r][c] ^= 1;
-      }
-  }
-
-  function generateQR(text) {
-    const bytes = new TextEncoder().encode(text);
-    const version = getVersion(bytes.length);
-    const size = version * 4 + 17;
-    const m = makeMatrix(version);
-
-    // Finder patterns + separators
-    drawFinder(m, 0, 0);
-    drawFinder(m, 0, size - 7);
-    drawFinder(m, size - 7, 0);
-    // Separators (already 0 from makeMatrix being -1 territory)
-    for (let i = 0; i < 8; i++) {
-      m[7][i] = 0; m[i][7] = 0;
-      m[7][size-1-i] = 0; m[i][size-8] = 0;
-      m[size-8][i] = 0; m[size-1-i][7] = 0;
-    }
-
-    drawTiming(m, size);
-    drawAlignment(m, version);
-    reserveFormat(m, size);
-
-    const data = encodeData(text, version);
-    const full = addEC(data, version);
-
-    const mask = 2;
-    placeData(m, size, full);
-    applyMask(m, size, mask);
-    writeFormat(m, size, mask);
-
-    return { m, size };
-  }
-
-  function drawQRCanvas(text, cellSize = 7, quiet = 4) {
-    const { m, size } = generateQR(text);
-    const total = (size + quiet * 2) * cellSize;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = total;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, total, total);
-    ctx.fillStyle = '#000';
-    const off = quiet * cellSize;
-    for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++)
-        if (m[r][c]) ctx.fillRect(off + c * cellSize, off + r * cellSize, cellSize, cellSize);
-    return canvas;
-  }
-
   // ── App state ─────────────────────────────────────────────
   let currentURL = '';
+  let qrInstance = null;
 
   function getInstallURL() {
-    // Build the install page URL from current location
     const base = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
     return base + 'install.html';
   }
@@ -672,13 +360,26 @@
   function renderQR(url) {
     currentURL = url;
     const wrapper = document.getElementById('qrWrapper');
-    wrapper.innerHTML = '';
-    try {
-      const canvas = drawQRCanvas(url, 7, 4);
-      wrapper.appendChild(canvas);
-    } catch(e) {
-      wrapper.innerHTML = `<div style="padding:40px;color:#f07a3a;font-size:13px;text-align:center">Fout bij genereren QR:<br>${e.message}<br><br>URL mogelijk te lang — probeer een kortere URL.</div>`;
+
+    if (qrInstance) {
+      qrInstance.clear();
+      wrapper.innerHTML = '';
+      qrInstance = null;
     }
+
+    try {
+      qrInstance = new QRCode(wrapper, {
+        text: url,
+        width: 256,
+        height: 256,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    } catch(e) {
+      wrapper.innerHTML = '<div style="padding:40px;color:#f07a3a;font-size:13px;text-align:center">Fout bij genereren QR:<br>' + e.message + '</div>';
+    }
+
     document.getElementById('qrUrlDisplay').textContent = url;
     document.getElementById('urlInput').value = url;
     const link = document.getElementById('openInstallLink');
