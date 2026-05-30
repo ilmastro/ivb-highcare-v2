@@ -17,7 +17,8 @@
       "name": "Persoonlijk Begeleider",
       "role": "4 vaste begeleiders",
       "info": "Zie uw dagrooster",
-      "info_color": "ci-teal"
+      "info_color": "ci-teal",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/persoonlijk-begeleider.png"
     },
     {
       "id": "pvp",
