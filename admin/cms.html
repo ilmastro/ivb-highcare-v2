@@ -1840,6 +1840,11 @@ function renderContactEditor(area) {
                 </div>
               </div>
               <div class="field">
+                <div class="field-label">Foto URL <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)">(optioneel — vervangt initialen)</span></div>
+                <input class="input" value="${esc(p.avatar_image||'')}" placeholder="https://raw.githubusercontent.com/…/images/naam.jpg" oninput="data.contact.persons[${i}].avatar_image=this.value;triggerAutoSave()">
+                <div class="field-hint">Plak hier de URL van een afbeelding uit de Media-bibliotheek. Laat leeg om de gekleurde initialen te tonen.</div>
+              </div>
+              <div class="field">
                 <div class="field-label">Naam</div>
                 <input class="input" value="${esc(p.name)}" oninput="data.contact.persons[${i}].name=this.value;triggerAutoSave()">
               </div>
@@ -2016,10 +2021,18 @@ function updatePhonePreview() {
     const infoColorMap = { 'ci-sky': '#2d6ecf', 'ci-teal': '#0d8a7a', 'ci-pink': '#e84f8c' };
     const personCards = data.contact.persons.map(p => {
       const infoColor = infoColorMap[p.info_color] || '#2d6ecf';
-      return `<div class="ph-card">
-        <div class="ph-card-title">${esc(p.name)}</div>
-        <div class="ph-card-sub" style="margin-top:3px">${esc(p.role)}</div>
-        <div style="font-size:8.5px;color:${infoColor};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-phone" style="font-size:9px"></i>${esc(p.info)}</div>
+      const avatarBgMap = { 'av-sky':'#2d6ecf','av-teal':'#0d8a7a','av-pink':'#e84f8c','av-coral':'#f07a3a','av-gold':'#d49a0a','av-purple':'#7b5ea7' };
+      const avatarBg = avatarBgMap[p.avatar_color] || '#2d6ecf';
+      const avatarHtml = (p.avatar_image && p.avatar_image.trim())
+        ? `<div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;overflow:hidden;background:${avatarBg}"><img src="${esc(p.avatar_image.trim())}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='<span style=\'font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;height:100%\'>${esc(p.initials)}</span>'"></div>`
+        : `<div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;background:${avatarBg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">${esc(p.initials)}</div>`;
+      return `<div class="ph-card" style="display:flex;align-items:center;gap:8px">
+        ${avatarHtml}
+        <div style="min-width:0">
+          <div class="ph-card-title">${esc(p.name)}</div>
+          <div class="ph-card-sub" style="margin-top:2px">${esc(p.role)}</div>
+          <div style="font-size:8.5px;color:${infoColor};margin-top:4px;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-phone" style="font-size:9px"></i>${esc(p.info)}</div>
+        </div>
       </div>`;
     }).join('');
 
