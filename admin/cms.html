@@ -2047,10 +2047,21 @@ function updatePhonePreview() {
    MEDIA PAGE
 ══════════════════════════════════════════════════════════ */
 function renderMediaPage(area) {
-  const images = [
+  /* Static assets always present in the repo */
+  const staticImages = [
     { name: 'icon-512.png', path: '../icon-512.png', desc: 'App icoon' },
     { name: 'icon-192.png', path: '../icon-192.png', desc: 'PWA icoon' },
   ];
+
+  /* Uploaded images stored in _meta so they survive page re-renders */
+  const uploadedImages = (data._meta?.uploadedImages || []);
+
+  /* Combine static + uploaded for the grid */
+  const allImages = [
+    ...staticImages,
+    ...uploadedImages.map(u => ({ name: u.filename, path: u.url, desc: `Geüpload — /images/${u.filename}`, uploaded: true, url: u.url })),
+  ];
+
   area.innerHTML = `
     <div class="page-header">
       <div>
@@ -2062,28 +2073,181 @@ function renderMediaPage(area) {
         <div class="topbar-btn" onclick="navigate('dashboard')"><i class="ti ti-arrow-left"></i> Terug</div>
       </div>
     </div>
-    <div class="info-banner">
+
+    <div class="info-banner" style="margin-bottom:16px">
       <i class="ti ti-info-circle"></i>
-      <div>Afbeeldingen worden beheerd via de repository. Upload bestanden via GitHub of gebruik de Netlify Large Media functie. De bestanden hieronder zijn beschikbaar in de app.</div>
+      <div>Geüploade afbeeldingen worden opgeslagen in <strong>images/</strong> in de repository. Gebruik de URL (kopieerknop) om ernaar te verwijzen in kaarten of tekstvelden.</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:8px">
-      ${images.map(img => `
-        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
-          <div style="background:var(--surface);height:120px;display:flex;align-items:center;justify-content:center;padding:16px">
-            <img src="${img.path}" alt="${img.name}" style="max-width:100%;max-height:88px;object-fit:contain;border-radius:8px" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-            <div style="display:none;flex-direction:column;align-items:center;color:var(--text3)"><i class="ti ti-photo" style="font-size:28px"></i><span style="font-size:10px;margin-top:4px">Niet gevonden</span></div>
+
+    <!-- Upload drop zone -->
+    <div id="mediaDropZone"
+      style="background:var(--bg2);border:2px dashed var(--border2);border-radius:var(--radius);padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all var(--tr);margin-bottom:20px;text-align:center"
+      onclick="document.getElementById('mediaFileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-bg)'"
+      ondragleave="this.style.borderColor='var(--border2)';this.style.background='var(--bg2)'"
+      ondrop="event.preventDefault();this.style.borderColor='var(--border2)';this.style.background='var(--bg2)';handleMediaDrop(event.dataTransfer.files)">
+      <i class="ti ti-cloud-upload" style="font-size:32px;color:var(--accent)"></i>
+      <div style="font-size:13px;font-weight:600;color:var(--text1)">Klik of sleep een afbeelding hierheen</div>
+      <div style="font-size:11px;color:var(--text3)">JPG, PNG, GIF, WebP, SVG · max 3 MB</div>
+      <input type="file" id="mediaFileInput" accept="image/*" style="display:none" onchange="handleMediaFileSelect(this.files)">
+    </div>
+
+    <!-- Upload progress bar (hidden by default) -->
+    <div id="mediaUploadProgress" style="display:none;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px">
+        <i class="ti ti-loader" style="font-size:16px;color:var(--accent);animation:spin 1s linear infinite"></i>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:var(--text1)" id="mediaUploadFilename">Uploaden...</div>
+          <div style="height:4px;background:var(--border2);border-radius:2px;margin-top:6px">
+            <div id="mediaUploadBar" style="height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.3s ease"></div>
           </div>
-          <div style="padding:10px 12px;border-top:1px solid var(--border)">
-            <div style="font-size:12.5px;font-weight:600;color:var(--text1)">${img.name}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">${img.desc}</div>
-          </div>
-        </div>`).join('')}
-      <div style="background:var(--bg2);border:2px dashed var(--border2);border-radius:var(--radius);height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--tr)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="showToast('Upload via GitHub repository of Netlify Large Media','ti-upload')">
-        <i class="ti ti-upload" style="font-size:24px;color:var(--text3)"></i>
-        <div style="font-size:12px;font-weight:600;color:var(--text3)">Afbeelding toevoegen</div>
-        <div style="font-size:11px;color:var(--text3)">via GitHub</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px" id="mediaGrid">
+      ${allImages.map(img => renderMediaCard(img)).join('')}
+    </div>`;
+}
+
+function renderMediaCard(img) {
+  const copyBtn = img.uploaded
+    ? `<div class="topbar-btn" style="font-size:10px;padding:4px 8px;margin-top:6px;width:100%;justify-content:center" onclick="event.stopPropagation();copyToClipboard('${img.url}','URL gekopieerd')">
+        <i class="ti ti-copy"></i> Kopieer URL
+       </div>`
+    : '';
+  return `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <div style="background:var(--surface);height:110px;display:flex;align-items:center;justify-content:center;padding:12px;position:relative">
+        <img src="${img.path}" alt="${img.name}" style="max-width:100%;max-height:86px;object-fit:contain;border-radius:6px"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;flex-direction:column;align-items:center;color:var(--text3)">
+          <i class="ti ti-photo" style="font-size:26px"></i>
+          <span style="font-size:10px;margin-top:4px">Niet gevonden</span>
+        </div>
+      </div>
+      <div style="padding:9px 11px;border-top:1px solid var(--border)">
+        <div style="font-size:11.5px;font-weight:600;color:var(--text1);word-break:break-all">${img.name}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${img.desc}</div>
+        ${copyBtn}
       </div>
     </div>`;
+}
+
+function copyToClipboard(text, toastMsg) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(toastMsg || 'Gekopieerd', 'ti-check');
+  }).catch(() => {
+    /* fallback for older browsers */
+    const el = document.createElement('textarea');
+    el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast(toastMsg || 'Gekopieerd', 'ti-check');
+  });
+}
+
+function handleMediaDrop(files) {
+  if (files && files.length) handleMediaUpload(files[0]);
+}
+
+function handleMediaFileSelect(files) {
+  if (files && files.length) handleMediaUpload(files[0]);
+}
+
+async function handleMediaUpload(file) {
+  /* Validate client-side first */
+  const ALLOWED = ['image/jpeg','image/png','image/gif','image/webp','image/svg+xml'];
+  if (!ALLOWED.includes(file.type)) {
+    showToast('Bestandstype niet toegestaan. Gebruik JPG, PNG, GIF, WebP of SVG.', 'ti-alert-triangle');
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    showToast('Bestand is te groot. Maximum is 3 MB.', 'ti-alert-triangle');
+    return;
+  }
+
+  /* Show progress UI */
+  const progress = document.getElementById('mediaUploadProgress');
+  const bar = document.getElementById('mediaUploadBar');
+  const label = document.getElementById('mediaUploadFilename');
+  const dropZone = document.getElementById('mediaDropZone');
+  if (progress) { progress.style.display = 'block'; }
+  if (label) label.textContent = `Uploaden: ${file.name}`;
+  if (bar) bar.style.width = '20%';
+  if (dropZone) dropZone.style.pointerEvents = 'none';
+
+  try {
+    /* Read file as base64 */
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]); /* strip data:...;base64, prefix */
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    if (bar) bar.style.width = '50%';
+
+    /* POST to Netlify Function */
+    const res = await fetch('/.netlify/functions/upload-image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.token.access_token}`,
+      },
+      body: JSON.stringify({
+        filename: file.name,
+        mimeType: file.type,
+        data: base64Data,
+      }),
+    });
+
+    if (bar) bar.style.width = '85%';
+
+    const json = await res.json();
+
+    if (res.ok && json.success) {
+      if (bar) bar.style.width = '100%';
+
+      /* Store in _meta so the grid persists across re-renders */
+      if (!data._meta) data._meta = {};
+      if (!data._meta.uploadedImages) data._meta.uploadedImages = [];
+
+      /* Replace if same filename was re-uploaded */
+      const existing = data._meta.uploadedImages.findIndex(u => u.filename === json.filename);
+      const entry = { filename: json.filename, url: json.url, path: json.path, ts: new Date().toISOString() };
+      if (existing >= 0) {
+        data._meta.uploadedImages[existing] = entry;
+      } else {
+        data._meta.uploadedImages.unshift(entry);
+      }
+
+      /* Persist locally */
+      try { localStorage.setItem('ivb-cms-data', JSON.stringify(data)); } catch(e) {}
+
+      showToast(`${json.filename} geüpload — Netlify bouwt opnieuw`, 'ti-photo');
+
+      /* Re-render the media page to show new image */
+      setTimeout(() => renderPage('media'), 400);
+
+    } else {
+      showToast('Upload mislukt: ' + (json.error || 'Onbekende fout'), 'ti-alert-triangle');
+      console.error('Upload error:', json);
+    }
+
+  } catch (err) {
+    showToast('Verbindingsfout tijdens upload', 'ti-wifi-off');
+    console.error('Upload fetch error:', err);
+  } finally {
+    if (progress) progress.style.display = 'none';
+    if (bar) bar.style.width = '0%';
+    if (dropZone) dropZone.style.pointerEvents = '';
+    /* Reset file input so same file can be re-selected */
+    const input = document.getElementById('mediaFileInput');
+    if (input) input.value = '';
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
