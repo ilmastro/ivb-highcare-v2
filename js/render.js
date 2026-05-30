@@ -245,9 +245,17 @@ function renderRegels(data) {
 function renderContact(data) {
   const panel = document.getElementById('panel-contact');
 
-  const persons = data.persons.map(p => `
+  const persons = data.persons.map(p => {
+    /* Avatar: show photo if avatar_image is set, otherwise fall back to initials circle */
+    const avatarHtml = (p.avatar_image && p.avatar_image.trim())
+      ? `<div class="avatar ${escHtml(p.avatar_color)} avatar-img">
+           <img src="${escHtml(p.avatar_image.trim())}" alt="${escHtml(p.initials)}"
+             onerror="this.parentElement.classList.remove('avatar-img');this.remove();">
+         </div>`
+      : `<div class="avatar ${escHtml(p.avatar_color)}">${escHtml(p.initials)}</div>`;
+    return `
     <div class="contact-card">
-      <div class="avatar ${escHtml(p.avatar_color)}">${escHtml(p.initials)}</div>
+      ${avatarHtml}
       <div>
         <div class="contact-name">${escHtml(p.name)}</div>
         <div class="contact-role">${escHtml(p.role)}</div>
@@ -255,7 +263,8 @@ function renderContact(data) {
           <i class="ti ti-phone"></i>${escHtml(p.info)}
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   /* Tijden accordion */
   const tijdenRows = data.tijden.map(t => `
