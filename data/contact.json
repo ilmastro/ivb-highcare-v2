@@ -27,7 +27,8 @@
       "name": "Patiëntenvertrouwenspersoon",
       "role": "Onafhankelijk en vertrouwelijk",
       "info": "Op te vragen bij verpleging",
-      "info_color": "ci-sky"
+      "info_color": "ci-sky",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/vertrouwen-persoon.png"
     }
   ],
   "tijden": [
