@@ -36,6 +36,10 @@
     {
       "label": "Bezoek weekend & feestdagen",
       "tijd": "14:00–17:00 en 19:00–21:00"
+    },
+    {
+      "label": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/despreng.png",
+      "tijd": ""
     }
   ],
   "tijden_note": "Andere tijden mogelijk in overleg met de afdeling.",
