@@ -1,7 +1,7 @@
 {
   "name": "IVB High Care Informatiegids",
-  "short_name": "IVB HC",
-  "description": "Informatiegids voor patiënten van IVB High Care",
+  "short_name": "De Spreng",
+  "description": "Informatiegids voor patiënten van GGnet De Spreng.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
