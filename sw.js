@@ -1,7 +1,7 @@
 /* IVB High Care — Service Worker */
 
 /* BUG FIX 3: cache name was still 'ivb-highcare-v1' — bumped to v2 so old cache gets busted */
-const CACHE_NAME = 'ivb-highcare-v4';
+const CACHE_NAME = 'ivb-highcare-v5';
 
 /* BUG FIX 4: ASSETS list was nearly empty — added all CSS, JS, and data files so offline actually works */
 const ASSETS = [
