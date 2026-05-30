@@ -198,6 +198,8 @@ body {
   padding: 10px 8px;
 }
 
+a.nav-item { text-decoration: none; color: inherit; }
+
 /* ── MAIN ────────────────────────────────────────────────── */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
@@ -1061,6 +1063,9 @@ body {
   <div class="nav-item" data-page="media" onclick="navigate('media')"><i class="ti ti-photo"></i> Media</div>
 
   <div class="sidebar-footer">
+    <a class="nav-item nav-item-qr" href="../qr.html" target="_blank" title="Bekijk of print de QR-code voor app-installatie">
+      <i class="ti ti-qrcode"></i> QR-code voor app
+    </a>
     <div class="nav-item" data-page="instellingen" onclick="navigate('instellingen')"><i class="ti ti-settings"></i> Instellingen</div>
   </div>
 </aside>
