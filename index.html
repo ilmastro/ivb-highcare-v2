@@ -76,7 +76,36 @@
 <script src="js/accordion.js"></script>
 <script src="js/render.js"></script>
 <script src="js/search.js"></script>
+
+<!-- Update banner — hidden until a new SW is waiting -->
+<div id="updateBanner" style="
+  display:none;
+  position:fixed;
+  bottom:calc(var(--nav-h) + 10px);
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--teal);
+  color:#fff;
+  padding:11px 18px;
+  border-radius:24px;
+  font-family:var(--font-body);
+  font-size:13px;
+  font-weight:600;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.2);
+  white-space:nowrap;
+  cursor:pointer;
+  z-index:9998;
+  display:none;
+  align-items:center;
+  gap:8px;
+">
+  <i class="ti ti-refresh" style="font-size:16px"></i>
+  Update beschikbaar — tik om te vernieuwen
+</div>
+
 <script>
+  /* ── Netlify Identity redirect ── */
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on('init', user => {
       if (!user) {
@@ -84,6 +113,82 @@
           document.location.href = '/admin/';
         });
       }
+    });
+  }
+
+  /* ── Service Worker registration + update detection ──────────────
+     Strategy:
+     1. Register the SW as normal.
+     2. If a new SW is already waiting on load, show the banner immediately.
+     3. If a new SW installs while the page is open, show the banner then.
+     4. Every 30 minutes, nudge the browser to check for a new SW file.
+        (Browser only checks on navigation by default — this covers long sessions.)
+     5. When the user taps the banner, tell the waiting SW to activate,
+        then reload so all clients get the new version.
+  ──────────────────────────────────────────────────────────────────── */
+  const UPDATE_INTERVAL_MS = 30 * 60 * 1000; /* 30 minutes */
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(function (reg) {
+
+      /* Helper: show the update banner */
+      function showUpdateBanner() {
+        const banner = document.getElementById('updateBanner');
+        if (banner) {
+          banner.style.display = 'flex';
+          /* Animate in */
+          banner.style.opacity = '0';
+          banner.style.transition = 'opacity 0.4s ease';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              banner.style.opacity = '1';
+            });
+          });
+        }
+      }
+
+      /* Helper: activate waiting SW and reload */
+      function applyUpdate() {
+        const waiting = reg.waiting;
+        if (waiting) {
+          waiting.postMessage({ type: 'SKIP_WAITING' });
+          /* Once the new SW takes control, reload the page */
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            window.location.reload();
+          }, { once: true });
+        } else {
+          window.location.reload();
+        }
+      }
+
+      /* Banner tap handler */
+      const banner = document.getElementById('updateBanner');
+      if (banner) banner.addEventListener('click', applyUpdate);
+
+      /* Case 1: a new SW was already waiting when the page loaded */
+      if (reg.waiting) {
+        showUpdateBanner();
+      }
+
+      /* Case 2: a new SW finishes installing while the page is open */
+      reg.addEventListener('updatefound', function () {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', function () {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            /* New SW installed and waiting — existing clients still on old one */
+            showUpdateBanner();
+          }
+        });
+      });
+
+      /* Case 3: periodic check every 30 minutes for long-running sessions */
+      setInterval(function () {
+        reg.update().catch(function () { /* ignore network errors */ });
+      }, UPDATE_INTERVAL_MS);
+
+    }).catch(function (err) {
+      console.warn('SW registration failed:', err);
     });
   }
 </script>
