@@ -1,6 +1,4 @@
 {
-  "emergency_label": "Bel verpleegpost direct",
-  "emergency_number": "",
   "persons": [
     {
       "id": "vp",
@@ -40,5 +38,7 @@
       "tijd": "14:00–17:00 en 19:00–21:00"
     }
   ],
-  "tijden_note": "Andere tijden mogelijk in overleg met de afdeling."
+  "tijden_note": "Andere tijden mogelijk in overleg met de afdeling.",
+  "emergency_number": "+31381234567",
+  "emergency_label": "Bel verpleegpost direct"
 }
