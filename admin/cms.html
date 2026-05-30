@@ -2127,6 +2127,20 @@ function renderInstellingenPage(area) {
       </div>
     </div>
 
+    <div class="section-group" style="margin-bottom:16px">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-history sg-icon"></i>
+        <div class="sg-title">Publicatiegeschiedenis <span style="color:var(--text3);font-weight:400;font-size:12px">Herstel een eerdere versie</span></div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        <div class="field-hint" style="margin-bottom:12px">
+          Elke succesvolle publicatie maakt automatisch een herstelpunt aan. Herstel laadt de versie lokaal — u moet daarna zelf opnieuw publiceren.
+        </div>
+        <div id="historyList">${renderHistoryList()}</div>
+      </div>
+    </div>
+
     <div class="section-group" style="border-color:rgba(220,38,38,0.3)">
       <div class="section-group-header" onclick="toggleSectionGroup(this)" style="color:var(--red)">
         <i class="ti ti-alert-triangle sg-icon" style="color:var(--red)"></i>
@@ -2137,7 +2151,7 @@ function renderInstellingenPage(area) {
         <div class="field">
           <div class="field-label">Lokale opslag wissen</div>
           <div class="field-hint" style="margin-bottom:10px">Verwijdert alle niet-gepubliceerde wijzigingen en reset naar de standaardinhoud. Kan niet ongedaan worden gemaakt.</div>
-          <div class="topbar-btn" style="color:var(--red);border-color:rgba(220,38,38,0.4);display:inline-flex" onclick="confirmDelete('Lokale opslag wissen?','Dit verwijdert alle lokaal opgeslagen wijzigingen. Gepubliceerde inhoud op de live site blijft onaangetast.',()=>{localStorage.removeItem(\'ivb-cms-data\');location.reload();})">
+          <div class="topbar-btn" style="color:var(--red);border-color:rgba(220,38,38,0.4);display:inline-flex" onclick="confirmDelete('Lokale opslag wissen?','Dit verwijdert alle lokaal opgeslagen wijzigingen. Gepubliceerde inhoud op de live site blijft onaangetast.',()=>{localStorage.removeItem(\'ivb-cms-data\');localStorage.removeItem(\'ivb-cms-history\');location.reload();})">
             <i class="ti ti-trash"></i> Opslag wissen & herladen
           </div>
         </div>
@@ -2158,6 +2172,77 @@ function updateAppName(name) {
   data._meta.settings.appName = name;
   document.title = name || 'IVB High Care — Beheer CMS';
   triggerAutoSave();
+}
+
+/* ══════════════════════════════════════════════════════════
+   PUBLISH HISTORY — rollback snapshots stored in localStorage
+   Key: 'ivb-cms-history'  Value: JSON array, newest first, max 10
+══════════════════════════════════════════════════════════ */
+const HISTORY_KEY = 'ivb-cms-history';
+const HISTORY_MAX = 10;
+
+function saveHistorySnapshot() {
+  try {
+    const history = loadHistory();
+    const now = new Date();
+    const label = now.toLocaleDateString('nl-NL', { day:'2-digit', month:'short' })
+                + ' ' + now.toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' });
+    const snapshot = {
+      ts: now.toISOString(),
+      label,
+      user: currentUser?.email || 'onbekend',
+      data: JSON.parse(JSON.stringify(data)),
+    };
+    history.unshift(snapshot);
+    if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch(e) {
+    console.warn('History snapshot failed:', e);
+  }
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function renderHistoryList() {
+  const history = loadHistory();
+  if (!history.length) {
+    return `<div style="font-size:12px;color:var(--text3);padding:10px 0">
+      Nog geen publicaties gevonden. Herstelpunten worden aangemaakt bij elke succesvolle publicatie.
+    </div>`;
+  }
+  return history.map((h, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);margin-bottom:6px">
+      <i class="ti ti-clock" style="font-size:15px;color:var(--accent);flex-shrink:0"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text1)">${esc(h.label)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">${esc(h.user)}${i === 0 ? ' &nbsp;<span style="background:var(--accent-bg);color:var(--accent);font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600">Laatste</span>' : ''}</div>
+      </div>
+      <div class="topbar-btn" style="font-size:11px;padding:5px 10px;flex-shrink:0" onclick="restoreHistorySnapshot(${i})">
+        <i class="ti ti-restore"></i> Herstel
+      </div>
+    </div>`).join('');
+}
+
+function restoreHistorySnapshot(idx) {
+  const history = loadHistory();
+  const snapshot = history[idx];
+  if (!snapshot) return;
+  confirmDelete(
+    `Versie van ${esc(snapshot.label)} herstellen?`,
+    `De huidige inhoud wordt vervangen door deze versie. U kunt daarna de wijzigingen bekijken en zelf opnieuw publiceren.`,
+    () => {
+      data = snapshot.data;
+      try { localStorage.setItem('ivb-cms-data', JSON.stringify(data)); } catch(e) {}
+      triggerAutoSave();
+      navigate('dashboard');
+      showToast(`Versie van ${esc(snapshot.label)} hersteld — controleer en publiceer opnieuw`, 'ti-history');
+    }
+  );
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2288,6 +2373,9 @@ async function publishAll() {
       pill.classList.remove('saving');
       pill.innerHTML = '<div class="status-dot"></div> Wijzigingen opgeslagen';
       showToast('Gepubliceerd — Netlify bouwt de app nu opnieuw','ti-rocket');
+
+      /* ── HISTORY SNAPSHOT ── save a rollback point on every successful publish */
+      saveHistorySnapshot();
 
       /* show per-file result if anything was skipped */
       const skipped = json.results.filter(r => r.status !== 'updated');
