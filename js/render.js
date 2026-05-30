@@ -282,7 +282,18 @@ function renderContact(data) {
       </div></div>
     </div>`;
 
-  panel.innerHTML = `<div class="page-title">Contact</div>${persons}${tijdenAcc}`;
+  /* Emergency bar — only rendered when a number is configured */
+  const emergencyBar = (data.emergency_number && data.emergency_number.trim())
+    ? `<a class="emergency-bar" href="tel:${escHtml(data.emergency_number.trim())}">
+        <span class="emergency-bar-pulse"></span>
+        <i class="ti ti-phone-call emergency-bar-icon"></i>
+        <span class="emergency-bar-label">${escHtml(data.emergency_label || 'Bel verpleegpost direct')}</span>
+        <span class="emergency-bar-number">${escHtml(data.emergency_number.trim())}</span>
+        <i class="ti ti-chevron-right emergency-bar-arrow"></i>
+      </a>`
+    : '';
+
+  panel.innerHTML = `<div class="page-title">Contact</div>${emergencyBar}${persons}${tijdenAcc}`;
 
   data.persons.forEach(p => {
     window.searchData.push({
