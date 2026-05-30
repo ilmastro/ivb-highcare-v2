@@ -4,7 +4,7 @@
       "id": "vp",
       "initials": "VP",
       "avatar_color": "av-sky",
-      "name": "Verpleegpost IVB HC",
+      "name": "Verpleegpost De Spreng",
       "role": "24 uur per dag aanwezig",
       "info": "Vraag uw begeleider om het nummer",
       "info_color": "ci-sky",
@@ -29,6 +29,16 @@
       "info": "Op te vragen bij verpleging",
       "info_color": "ci-sky",
       "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/vertrouwen-persoon.png"
+    },
+    {
+      "id": "p1780183799522",
+      "initials": "ST",
+      "avatar_color": "av-coral",
+      "name": "Secretariaat",
+      "role": "Om afspraken te maken.",
+      "info": "+3138123456969",
+      "info_color": "ci-sky",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/secretariaat.png"
     }
   ],
   "tijden": [
