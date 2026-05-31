@@ -1,0 +1,101 @@
+{
+  "cards": [
+    {
+      "id": "visie",
+      "icon": "ti-eye",
+      "color": "ic-teal",
+      "title": "Ward Vision — ART",
+      "subtitle": "Active Recovery Triad",
+      "body": "At IVB High Care, we work according to ART: the Active Recovery Triad method.",
+      "phases": [
+        {
+          "title": "First week of admission",
+          "desc": "Intake interview, physical examination and blood tests."
+        },
+        {
+          "title": "Diagnostic phase",
+          "desc": "Carrying out assessments and questionnaires, and setting observation goals."
+        },
+        {
+          "title": "Treatment phase",
+          "desc": "Based on all findings, you will receive a personal treatment plan."
+        },
+        {
+          "title": "Discharge phase",
+          "desc": "Preparation for your next placement."
+        }
+      ]
+    },
+    {
+      "id": "eten",
+      "icon": "ti-coffee",
+      "color": "ic-gold",
+      "title": "Meal Times & Kitchen",
+      "subtitle": "Breakfast, lunch and dinner",
+      "body": "",
+      "tijden": [
+        {
+          "label": "Breakfast (walk-in)",
+          "tijd": "08:00 – 09:00"
+        },
+        {
+          "label": "Lunch",
+          "tijd": "From 12:15"
+        },
+        {
+          "label": "Dinner",
+          "tijd": "From 17:15"
+        }
+      ]
+    },
+    {
+      "id": "slaap",
+      "icon": "ti-moon",
+      "color": "ic-navy",
+      "title": "Sleep and Rest Times",
+      "subtitle": "Quiet at night",
+      "body": "",
+      "tijden": [
+        {
+          "label": "Quiet on the ward",
+          "tijd": "23:00 – 07:00"
+        },
+        {
+          "label": "Night mode",
+          "tijd": "From 22:00"
+        }
+      ]
+    },
+    {
+      "id": "verboden",
+      "icon": "ti-ban",
+      "color": "ic-red",
+      "title": "Not Allowed in Your Room",
+      "subtitle": "Prohibited items",
+      "body": "Clothing & shoes: only what fits in the wardrobe.",
+      "rules": [
+        "Ashtray, candles, incense",
+        "Kettle, hot plate, television",
+        "Alcohol, energy drinks, drugs",
+        "Medication (managed by nursing staff)"
+      ]
+    },
+    {
+      "id": "roken",
+      "icon": "ti-smoking",
+      "color": "ic-coral",
+      "title": "Smoking",
+      "subtitle": "Only in designated outdoor areas",
+      "body": "Smoking is only allowed in the designated areas on the grounds.",
+      "warning": "If you smoke in your bedroom, your tobacco will be confiscated for 24 hours."
+    },
+    {
+      "id": "pvp",
+      "icon": "ti-shield-check",
+      "color": "ic-teal",
+      "title": "Patient Confidential Adviser (PVP)",
+      "subtitle": "Independent and confidential",
+      "body": "Do you have questions or complaints? You can contact the PVP."
+    }
+  ]
+}

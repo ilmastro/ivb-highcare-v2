@@ -1,0 +1,84 @@
+{
+  "cards": [
+    {
+      "id": "behandelcoordinator",
+      "icon": "ti-clipboard-heart",
+      "color": "ic-navy",
+      "title": "Treatment Coordinator",
+      "subtitle": "Responsible for your care pathway",
+      "body": "Your treatment coordinator is responsible for your treatment agreement and your care pathway.\n\nUpon admission, you will have a conversation with the psychiatrist about your wishes."
+    },
+    {
+      "id": "regiebehandelaar",
+      "icon": "ti-brain",
+      "color": "ic-purple",
+      "title": "Lead Clinician",
+      "subtitle": "Final medical responsibility",
+      "body": "Your lead clinician may be the psychiatrist or nurse specialist. They have final medical responsibility for your treatment."
+    },
+    {
+      "id": "huisarts",
+      "icon": "ti-stethoscope",
+      "color": "ic-teal",
+      "title": "General Practitioner",
+      "subtitle": "Medical consultations on site",
+      "body": "It is possible to consult the general practitioner connected to the clinic at IVB High Care."
+    },
+    {
+      "id": "maatschappelijk",
+      "icon": "ti-building-community",
+      "color": "ic-coral",
+      "title": "Social Work",
+      "subtitle": "Practical support",
+      "body": "The social workers at IVB High Care are available for questions about benefits and other practical matters."
+    },
+    {
+      "id": "ervaringsdeskundige",
+      "icon": "ti-user-heart",
+      "color": "ic-pink",
+      "title": "Peer Support Worker",
+      "subtitle": "Peer contact & conversation",
+      "body": "Our team includes a peer support worker. You can speak with him about your treatment from a shared perspective."
+    },
+    {
+      "id": "geestelijk",
+      "icon": "ti-sparkles",
+      "color": "ic-gold",
+      "title": "Spiritual Care Provider",
+      "subtitle": "Meaning and life questions",
+      "body": "The spiritual care provider offers support with meaning, life questions, worldview and spirituality."
+    },
+    {
+      "id": "begeleiders",
+      "icon": "ti-user-star",
+      "color": "ic-sky",
+      "title": "Personal Support Workers",
+      "subtitle": "4 fixed points of contact",
+      "body": "The permanent team consists of nurses, social care workers, security staff and peer support workers."
+    },
+    {
+      "id": "netwerk",
+      "icon": "ti-network",
+      "color": "ic-peach",
+      "title": "Support Network",
+      "subtitle": "Involving family and loved ones",
+      "body": "With your consent, your support network will be closely involved in your treatment to contribute to your recovery."
+    },
+    {
+      "id": "overleg",
+      "icon": "ti-messages",
+      "color": "ic-navy",
+      "title": "Consultation Meetings",
+      "subtitle": "Care Coordination Meeting and Daily Meeting",
+      "body": "ZAG — Care Coordination Meeting\nDuring your admission, you will regularly have a ZAG."
+    },
+    {
+      "id": "card_1779585370292",
+      "icon": "ti-plant",
+      "color": "ic-sky",
+      "title": "Sports Coach",
+      "subtitle": "Subtitle",
+      "body": "You can also do one-to-one exercise."
+    }
+  ]
+}

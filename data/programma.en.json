@@ -1,0 +1,106 @@
+{
+  "cards": [
+    {
+      "id": "at",
+      "icon": "ti-palette",
+      "color": "ic-coral",
+      "title": "Activity Therapy (AT)",
+      "subtitle": "Extension: 5789",
+      "body": "Together with you, we explore which daytime activity is suitable for you.",
+      "schedule": [
+        {
+          "day": "Monday to Friday",
+          "rows": [
+            {
+              "time": "09:00 – 09:30",
+              "activity": "Walk"
+            },
+            {
+              "time": "13:30 – 16:00",
+              "activity": "Activities"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tuin",
+      "icon": "ti-plant",
+      "color": "ic-green",
+      "title": "The Garden",
+      "subtitle": "Extension: 2258 — approved privileges required",
+      "body": "A range of indoor and outdoor activities related to garden maintenance.",
+      "schedule": []
+    },
+    {
+      "id": "sport",
+      "icon": "ti-run",
+      "color": "ic-teal",
+      "title": "Sports Times",
+      "subtitle": "Fitness, walking, yoga & more",
+      "body": "",
+      "schedule": [
+        {
+          "day": "Monday",
+          "rows": [
+            {
+              "time": "13:15 – 15:00",
+              "activity": "Fitness & table tennis"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modules",
+      "icon": "ti-puzzle",
+      "color": "ic-purple",
+      "title": "Modules",
+      "subtitle": "Treatment programmes",
+      "body": "The Carousel takes place every Wednesday.",
+      "modules_list": [
+        "Emotion regulation training",
+        "Social skills training",
+        "Carousel (Wednesday)"
+      ],
+      "schedule": []
+    },
+    {
+      "id": "sop",
+      "icon": "ti-sofa",
+      "color": "ic-peach",
+      "title": "SOP",
+      "subtitle": "Social Meeting Place",
+      "body": "The SOP is the place where you can meet others.",
+      "schedule": []
+    },
+    {
+      "id": "bezoek",
+      "icon": "ti-clock",
+      "color": "ic-sky",
+      "title": "Visiting Hours",
+      "subtitle": "When can visitors come?",
+      "body": "Other times are possible in consultation with the ward.",
+      "schedule": []
+    },
+    {
+      "id": "card_1779634273147",
+      "icon": "ti-palette",
+      "color": "ic-pink",
+      "title": "Art Therapy",
+      "subtitle": "One-to-one",
+      "body": "An experience-based form of treatment in which you use creative materials—such as paint, clay, wood or stone—to make problems, feelings and thoughts visible and tangible.",
+      "schedule": [
+        {
+          "day": "Monday",
+          "rows": [
+            {
+              "time": "09:00 – 10:30",
+              "activity": "Drawing"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "persons": [
+    {
+      "id": "vp",
+      "initials": "VP",
+      "avatar_color": "av-sky",
+      "name": "Nursing Station De Spreng",
+      "role": "Available 24 hours a day",
+      "info": "Ask your support worker for the number",
+      "info_color": "ci-sky",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/despreng.png"
+    },
+    {
+      "id": "pb",
+      "initials": "PB",
+      "avatar_color": "av-teal",
+      "name": "Personal Support Worker",
+      "role": "4 fixed support workers",
+      "info": "See your daily schedule",
+      "info_color": "ci-teal",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/persoonlijk-begeleider1.png"
+    },
+    {
+      "id": "pvp",
+      "initials": "PV",
+      "avatar_color": "av-pink",
+      "name": "Patient Confidential Adviser",
+      "role": "Independent and confidential",
+      "info": "Available on request from nursing staff",
+      "info_color": "ci-sky",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/vertrouwen-persoon.png"
+    },
+    {
+      "id": "p1780183799522",
+      "initials": "ST",
+      "avatar_color": "av-coral",
+      "name": "Secretariat",
+      "role": "For making appointments.",
+      "info": "+3138123456969",
+      "info_color": "ci-sky",
+      "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/secretariaat.png"
+    }
+  ],
+  "tijden": [
+    {
+      "label": "Visits Mon to Fri",
+      "tijd": "19:00 – 21:00"
+    },
+    {
+      "label": "Visits weekends & public holidays",
+      "tijd": "14:00–17:00 and 19:00–21:00"
+    }
+  ],
+  "tijden_note": "Other times are possible in consultation with the ward.",
+  "emergency_number": "+3138123456767",
+  "emergency_label": "Call the nursing station directly"
+}
