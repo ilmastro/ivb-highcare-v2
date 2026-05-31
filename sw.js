@@ -4,7 +4,7 @@
    - everything else          → CACHE-FIRST    (fast shell, works fully offline)
 */
 
-const CACHE_NAME = 'ivb-highcare-v6';
+const CACHE_NAME = 'ivb-highcare-v7';
 
 const SHELL_ASSETS = [
   './index.html',
@@ -20,6 +20,7 @@ const SHELL_ASSETS = [
   './js/accordion.js',
   './js/render.js',
   './js/search.js',
+  './js/lang.js',
 ];
 
 /* Pre-cache the app shell on install */
