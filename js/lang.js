@@ -18,11 +18,15 @@
     return window.currentLang === 'en' ? '.en' : '';
   };
 
-  /* Switch language and reload to re-fetch all content */
+  /* Switch language: save preference, re-run initApp — NO page reload */
   window.setLang = function (lang) {
     if (supported.indexOf(lang) === -1) return;
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
-    window.location.reload();
+    window.currentLang = lang;
+    /* Re-fetch and re-render all content for new language */
+    if (typeof initApp === 'function') initApp();
+    /* Update toggle immediately */
+    updateLangToggle();
   };
 
   /* Update toggle button appearance to match current lang */
