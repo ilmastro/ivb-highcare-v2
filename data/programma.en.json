@@ -6,7 +6,7 @@
       "color": "ic-coral",
       "title": "Activity Therapy (AT)",
       "subtitle": "Extension: 5789",
-      "body": "Together with you, we explore which daytime activity is suitable for you.",
+      "body": "Together, we explore which daytime activity is suitable for you.",
       "schedule": [
         {
           "day": "Monday to Friday",
@@ -71,7 +71,7 @@
       "color": "ic-peach",
       "title": "SOP",
       "subtitle": "Social Meeting Place",
-      "body": "The SOP is the place where you can meet others.",
+      "body": "The SOP/SMP is the place where you can meet others.",
       "schedule": []
     },
     {
