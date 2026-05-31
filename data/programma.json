@@ -71,7 +71,7 @@
       "color": "ic-peach",
       "title": "SOP",
       "subtitle": "Sociaal Ontmoetingsplek",
-      "body": "De SOP is de plek waar u anderen kunt ontmoeten.",
+      "body": "De SOP is de gemeenschappelijke ruimte waar u anderen kunt ontmoeten, televisie kijken, een spelletje doen of gewoon even bijkomen.",
       "schedule": []
     },
     {
@@ -81,7 +81,17 @@
       "title": "Bezoektijden",
       "subtitle": "Wanneer mogen bezoekers komen?",
       "body": "Andere tijden zijn mogelijk in overleg met de afdeling.",
-      "schedule": []
+      "schedule": [],
+      "tijden": [
+        {
+          "label": "Bezoek ma t/m vr",
+          "tijd": "19:00 – 21:00 uur"
+        },
+        {
+          "label": "Bezoek weekend & feestdagen",
+          "tijd": "14:00 – 17:00 en 19:00 – 21:00"
+        }
+      ]
     },
     {
       "id": "card_1779634273147",
