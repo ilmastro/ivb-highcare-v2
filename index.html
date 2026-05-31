@@ -155,11 +155,13 @@
       function applyUpdate() {
         const waiting = reg.waiting;
         if (waiting) {
-          waiting.postMessage({ type: 'SKIP_WAITING' });
-          /* Once the new SW takes control, reload the page */
+          /* Guard flag: ensure we only reload once even if both
+             controllerchange and the fallback below fire */
+          var reloading = false;
           navigator.serviceWorker.addEventListener('controllerchange', function () {
-            window.location.reload();
+            if (!reloading) { reloading = true; window.location.reload(); }
           }, { once: true });
+          waiting.postMessage({ type: 'SKIP_WAITING' });
         } else {
           window.location.reload();
         }
