@@ -4,8 +4,8 @@
 
 Een mobiele Progressive Web App (PWA) die patiënten tijdens hun verblijf op IVB High Care wegwijs maakt. De app is installeerbaar op telefoon en werkt ook offline.
 
-🌐 **Live app:** [ivb-highcare-v2.netlify.app](https://ivb-highcare-v2.netlify.app)
-🛠️ **CMS (beheer):** [ivb-highcare-v2.netlify.app/admin](https://ivb-highcare-v2.netlify.app/admin)
+🌐 **Live app:** [ggnetapp.netlify.app](https://ggnetapp.netlify.app)
+🛠️ **CMS (beheer):** [ggnetapp.netlify.app/admin/cms.html](https://ggnetapp.netlify.app/admin/cms.html)
 
 ---
 
@@ -31,7 +31,7 @@ Alle teksten, kaarten en tijden worden beheerd via het **CMS-dashboard**, zonder
 
 ### Hoe werkt het?
 
-1. Ga naar [ivb-highcare-v2.netlify.app/admin](https://ivb-highcare-v2.netlify.app/admin)
+1. Ga naar [ggnetapp.netlify.app/admin/cms.html](https://ggnetapp.netlify.app/admin/cms.html)
 2. Log in met je Netlify Identity account
 3. Kies een sectie in de linkerzijbalk (Home, Behandelteam, Dagprogramma, etc.)
 4. Pas de teksten aan — je ziet een live voorvertoning rechts in het scherm
