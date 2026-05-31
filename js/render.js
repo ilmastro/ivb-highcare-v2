@@ -68,6 +68,63 @@ function buildAccCard(card, extraBody = '') {
     </div>`;
 }
 
+/* ── UI STRINGS (language-aware) ─────────────────────────────── */
+const UI = {
+  nl: {
+    questions:    'Vragen?',
+    quickNav:     'Snel naar',
+    team:         'Behandelteam',
+    teamSub:      'Uw behandelaars',
+    programma:    'Dagprogramma',
+    programmaSub: 'Activiteiten & sport',
+    regels:       'Regels & Visie',
+    regelsSub:    'Huisregels afdeling',
+    contact:      'Contact',
+    contactSub:   'Nummers & tijden',
+    infomap:      'Informatiemap',
+    infomapTitle: 'Wat vindt u in deze gids?',
+    infomapSub:   'Overzicht van alle onderwerpen',
+    navHome:      'Home',
+    navTeam:      'Team',
+    navProgramma: 'Programma',
+    navRegels:    'Regels',
+    navContact:   'Contact',
+    pageTeam:     'Behandelteam',
+    pageProgramma:'Dagprogramma',
+    pageRegels:   'Regels & Visie',
+    pageContact:  'Contact',
+  },
+  en: {
+    questions:    'Questions?',
+    quickNav:     'Quick access',
+    team:         'Treatment Team',
+    teamSub:      'Your care providers',
+    programma:    'Daily Programme',
+    programmaSub: 'Activities & sport',
+    regels:       'Rules & Vision',
+    regelsSub:    'Ward guidelines',
+    contact:      'Contact',
+    contactSub:   'Numbers & hours',
+    infomap:      'Information guide',
+    infomapTitle: 'What will you find here?',
+    infomapSub:   'Overview of all topics',
+    navHome:      'Home',
+    navTeam:      'Team',
+    navProgramma: 'Programme',
+    navRegels:    'Rules',
+    navContact:   'Contact',
+    pageTeam:     'Treatment Team',
+    pageProgramma:'Daily Programme',
+    pageRegels:   'Rules & Vision',
+    pageContact:  'Contact',
+  }
+};
+
+function t(key) {
+  const lang = (typeof currentLang !== 'undefined') ? currentLang : 'nl';
+  return (UI[lang] && UI[lang][key]) ? UI[lang][key] : (UI.nl[key] || key);
+}
+
 /* ── HOME ────────────────────────────────────────────────────── */
 function renderHome(data) {
   const panel = document.getElementById('panel-home');
@@ -81,46 +138,46 @@ function renderHome(data) {
 
     <div class="notice">
       <i class="ti ti-info-circle"></i>
-      <p><strong>Vragen?</strong> ${escHtml(data.notice_text)}</p>
+      <p><strong>${t('questions')}</strong> ${escHtml(data.notice_text)}</p>
     </div>
 
-    <div class="section-label">Snel naar</div>
+    <div class="section-label">${t('quickNav')}</div>
     <div class="quick-grid">
       <div class="quick-tile qt-team" onclick="goTo('team')">
         <i class="ti ti-users qt-icon"></i>
-        <div class="qt-label">Behandelteam</div><div class="qt-sub">Uw behandelaars</div>
+        <div class="qt-label">${t('team')}</div><div class="qt-sub">${t('teamSub')}</div>
       </div>
       <div class="quick-tile qt-dag" onclick="goTo('dag')">
         <i class="ti ti-calendar-time qt-icon"></i>
-        <div class="qt-label">Dagprogramma</div><div class="qt-sub">Activiteiten &amp; sport</div>
+        <div class="qt-label">${t('programma')}</div><div class="qt-sub">${t('programmaSub')}</div>
       </div>
       <div class="quick-tile qt-regels" onclick="goTo('regels')">
         <i class="ti ti-clipboard-list qt-icon"></i>
-        <div class="qt-label">Regels &amp; Visie</div><div class="qt-sub">Huisregels afdeling</div>
+        <div class="qt-label">${t('regels')}</div><div class="qt-sub">${t('regelsSub')}</div>
       </div>
       <div class="quick-tile qt-contact" onclick="goTo('contact')">
         <i class="ti ti-phone qt-icon"></i>
-        <div class="qt-label">Contact</div><div class="qt-sub">Nummers &amp; tijden</div>
+        <div class="qt-label">${t('contact')}</div><div class="qt-sub">${t('contactSub')}</div>
       </div>
     </div>
 
-    <div class="section-label">Informatiemap</div>
+    <div class="section-label">${t('infomap')}</div>
     <div class="acc-card" onclick="toggleAcc(this)">
       <div class="acc-header">
         <div class="acc-icon ic-sky"><i class="ti ti-folder-open"></i></div>
         <div class="acc-meta">
-          <div class="acc-title">Wat vindt u in deze gids?</div>
-          <div class="acc-sub">Overzicht van alle onderwerpen</div>
+          <div class="acc-title">${t('infomapTitle')}</div>
+          <div class="acc-sub">${t('infomapSub')}</div>
         </div>
         <i class="ti ti-chevron-down acc-chevron"></i>
       </div>
       <div class="acc-body"><div class="acc-body-inner">
         <p>${escHtml(data.infomap_body)}</p>
         <div class="tag-row">
-          <span class="tag tag-pink"><i class="ti ti-users"></i> Team</span>
-          <span class="tag tag-teal"><i class="ti ti-calendar"></i> Programma</span>
-          <span class="tag tag-gold"><i class="ti ti-clipboard-list"></i> Regels</span>
-          <span class="tag tag-coral"><i class="ti ti-phone"></i> Contact</span>
+          <span class="tag tag-pink"><i class="ti ti-users"></i> ${t('navTeam')}</span>
+          <span class="tag tag-teal"><i class="ti ti-calendar"></i> ${t('navProgramma')}</span>
+          <span class="tag tag-gold"><i class="ti ti-clipboard-list"></i> ${t('navRegels')}</span>
+          <span class="tag tag-coral"><i class="ti ti-phone"></i> ${t('navContact')}</span>
         </div>
       </div></div>
     </div>`;
@@ -143,7 +200,7 @@ function renderTeam(data) {
     return buildAccCard(card, extra);
   }).join('');
 
-  panel.innerHTML = `<div class="page-title">Behandelteam</div>${cards}`;
+  panel.innerHTML = `<div class="page-title">${t('pageTeam')}</div>${cards}`;
 
   data.cards.forEach(card => {
     window.searchData.push({
@@ -168,7 +225,7 @@ function renderProgramma(data) {
     return buildAccCard(card, extra);
   }).join('');
 
-  panel.innerHTML = `<div class="page-title">Dagprogramma</div>${cards}`;
+  panel.innerHTML = `<div class="page-title">${t('pageProgramma')}</div>${cards}`;
 
   data.cards.forEach(card => {
     const snippetParts = [];
@@ -230,7 +287,7 @@ function renderRegels(data) {
     return buildAccCard(card, extra);
   }).join('');
 
-  panel.innerHTML = `<div class="page-title">Regels &amp; Visie</div>${cards}`;
+  panel.innerHTML = `<div class="page-title">${t('pageRegels')}</div>${cards}`;
 
   data.cards.forEach(card => {
     window.searchData.push({
@@ -302,7 +359,7 @@ function renderContact(data) {
       </a>`
     : '';
 
-  panel.innerHTML = `<div class="page-title">Contact</div>${emergencyBar}${persons}${tijdenAcc}`;
+  panel.innerHTML = `<div class="page-title">${t('pageContact')}</div>${emergencyBar}${persons}${tijdenAcc}`;
 
   data.persons.forEach(p => {
     window.searchData.push({
@@ -318,7 +375,6 @@ async function initApp() {
   /* Pick the right file suffix: '' (Dutch) or '.en' (English) */
   const s = (typeof getLangSuffix === 'function') ? getLangSuffix() : '';
 
-  /* Error message adapts to active language */
   const errMsg = (s === '.en')
     ? 'Could not load content. Please check your connection and refresh.'
     : 'Kon de inhoud niet laden. Controleer uw verbinding en ververs de pagina.';
@@ -338,7 +394,26 @@ async function initApp() {
     renderRegels(regels);
     renderContact(contact);
 
-    /* Sync lang toggle button state after render */
+    /* Update bottom nav labels for current language */
+    const navLabels = {
+      'nav-home':    t('navHome'),
+      'nav-team':    t('navTeam'),
+      'nav-dag':     t('navProgramma'),
+      'nav-regels':  t('navRegels'),
+      'nav-contact': t('navContact'),
+    };
+    Object.entries(navLabels).forEach(([id, label]) => {
+      const el = document.getElementById(id);
+      if (el) el.querySelector('span').textContent = label;
+    });
+
+    /* Update search placeholder */
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.placeholder = (s === '.en') ? 'Search the guide…' : 'Zoek in de gids…';
+    }
+
+    /* Sync lang toggle button state */
     if (typeof updateLangToggle === 'function') updateLangToggle();
 
     /* Notify search.js that data is ready */
