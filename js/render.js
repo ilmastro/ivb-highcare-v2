@@ -315,13 +315,21 @@ function renderContact(data) {
 
 /* ── INIT: fetch all JSONs in parallel ───────────────────────── */
 async function initApp() {
+  /* Pick the right file suffix: '' (Dutch) or '.en' (English) */
+  const s = (typeof getLangSuffix === 'function') ? getLangSuffix() : '';
+
+  /* Error message adapts to active language */
+  const errMsg = (s === '.en')
+    ? 'Could not load content. Please check your connection and refresh.'
+    : 'Kon de inhoud niet laden. Controleer uw verbinding en ververs de pagina.';
+
   try {
     const [home, team, programma, regels, contact] = await Promise.all([
-      fetch('./data/home.json').then(r => r.json()),
-      fetch('./data/team.json').then(r => r.json()),
-      fetch('./data/programma.json').then(r => r.json()),
-      fetch('./data/regels.json').then(r => r.json()),
-      fetch('./data/contact.json').then(r => r.json()),
+      fetch(`./data/home${s}.json`).then(r => r.json()),
+      fetch(`./data/team${s}.json`).then(r => r.json()),
+      fetch(`./data/programma${s}.json`).then(r => r.json()),
+      fetch(`./data/regels${s}.json`).then(r => r.json()),
+      fetch(`./data/contact${s}.json`).then(r => r.json()),
     ]);
 
     renderHome(home);
@@ -330,16 +338,18 @@ async function initApp() {
     renderRegels(regels);
     renderContact(contact);
 
+    /* Sync lang toggle button state after render */
+    if (typeof updateLangToggle === 'function') updateLangToggle();
+
     /* Notify search.js that data is ready */
     window.dispatchEvent(new Event('searchDataReady'));
 
   } catch (err) {
     console.error('IVB render error:', err);
-    /* Show a friendly error in the active panel instead of silent white screen */
     document.querySelector('.panel.active').innerHTML = `
       <div class="notice" style="margin-top:24px;">
         <i class="ti ti-alert-triangle" style="color:var(--coral)"></i>
-        <p>Kon de inhoud niet laden. Controleer uw verbinding en ververs de pagina.</p>
+        <p>${errMsg}</p>
       </div>`;
   }
 }
