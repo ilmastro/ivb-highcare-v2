@@ -36,7 +36,7 @@
       "avatar_color": "av-coral",
       "name": "Secretariaat",
       "role": "Om afspraken te maken.",
-      "info": "+3138123456969",
+      "info": "Op te vragen bij verpleging",
       "info_color": "ci-sky",
       "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/secretariaat.png"
     }
@@ -52,6 +52,6 @@
     }
   ],
   "tijden_note": "Andere tijden mogelijk in overleg met de afdeling.",
-  "emergency_number": "+3138123456767",
+  "emergency_number": "",
   "emergency_label": "Bel verpleegpost direct"
 }
