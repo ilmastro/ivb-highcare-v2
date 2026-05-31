@@ -93,6 +93,9 @@ const UI = {
     pageProgramma:'Dagprogramma',
     pageRegels:   'Regels & Visie',
     pageContact:  'Contact',
+    tijdenLabel:  'Tijden',
+    tijdenTitle:  'Bezoek- & openingstijden',
+    tijdenSub:    'Bezoek en SOP',
   },
   en: {
     questions:    'Questions?',
@@ -117,6 +120,9 @@ const UI = {
     pageProgramma:'Daily Programme',
     pageRegels:   'Rules & Vision',
     pageContact:  'Contact',
+    tijdenLabel:  'Times',
+    tijdenTitle:  'Visit & opening hours',
+    tijdenSub:    'Visits and SOP',
   }
 };
 
@@ -332,13 +338,13 @@ function renderContact(data) {
 
   /* BUG FIX 2: tijden_note ternary was truncated — closing backtick and structure was missing */
   const tijdenAcc = `
-    <div class="section-label" style="margin-top:16px">Tijden</div>
+    <div class="section-label" style="margin-top:16px">${t('tijdenLabel')}</div>
     <div class="acc-card" onclick="toggleAcc(this)">
       <div class="acc-header">
         <div class="acc-icon ic-coral"><i class="ti ti-clock-2"></i></div>
         <div class="acc-meta">
-          <div class="acc-title">Bezoek- &amp; openingstijden</div>
-          <div class="acc-sub">Bezoek en SOP</div>
+          <div class="acc-title">${t('tijdenTitle')}</div>
+          <div class="acc-sub">${t('tijdenSub')}</div>
         </div>
         <i class="ti ti-chevron-down acc-chevron"></i>
       </div>
