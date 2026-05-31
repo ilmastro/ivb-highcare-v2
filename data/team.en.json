@@ -74,11 +74,11 @@
     },
     {
       "id": "card_1779585370292",
-      "icon": "ti-plant",
+      "icon": "ti-run",
       "color": "ic-sky",
       "title": "Sports Coach",
-      "subtitle": "Subtitle",
-      "body": "You can also do one-to-one exercise."
+      "subtitle": "Individual sports support",
+      "body": "The sports coach supports you with individual sporting activities and movement on the ward. Together you will explore which form of exercise suits you best."
     }
   ]
 }
