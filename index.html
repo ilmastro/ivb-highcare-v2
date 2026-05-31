@@ -35,6 +35,9 @@
       </div>
     </div>
     <div class="header-actions">
+      <div class="icon-btn lang-btn" id="langBtn" title="Switch language" onclick="setLang(currentLang === 'en' ? 'nl' : 'en')">
+        <span class="lang-nl lang-active">NL</span><span class="lang-sep">/</span><span class="lang-en">EN</span>
+      </div>
       <div class="icon-btn search-btn" id="searchBtn" title="Zoeken"><span class="btn-icon" id="searchIcon">🔍</span></div>
       <div class="icon-btn theme-btn" id="themeBtn" title="Thema wisselen"><span class="btn-icon" id="themeIcon">🌙</span></div>
     </div>
@@ -71,6 +74,7 @@
 </div><!-- /app -->
 
 <!-- JS: order matters — theme & nav first, then render, then search -->
+<script src="js/lang.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/accordion.js"></script>
