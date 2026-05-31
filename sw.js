@@ -4,7 +4,7 @@
    - everything else          → CACHE-FIRST    (fast shell, works fully offline)
 */
 
-const CACHE_NAME = 'ivb-highcare-v7';
+const CACHE_NAME = 'ivb-highcare-v8';
 
 const SHELL_ASSETS = [
   './index.html',
@@ -30,8 +30,10 @@ self.addEventListener('install', function (event) {
       return cache.addAll(SHELL_ASSETS);
     })
   );
-  /* Take over immediately — don't wait for old SW clients to close */
-  self.skipWaiting();
+  /* Do NOT call skipWaiting() here — we wait for the user to tap
+     the update banner, which sends SKIP_WAITING via postMessage.
+     Auto-skipping causes controllerchange to fire unexpectedly and
+     can make the bottom nav disappear on reload. */
 });
 
 /* Remove old caches on activate */
