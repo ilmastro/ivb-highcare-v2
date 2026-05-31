@@ -36,7 +36,7 @@
       "avatar_color": "av-coral",
       "name": "Secretariat",
       "role": "For making appointments.",
-      "info": "+3138123456969",
+      "info": "Available on request from nursing staff",
       "info_color": "ci-sky",
       "avatar_image": "https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/images/secretariaat.png"
     }
@@ -52,6 +52,6 @@
     }
   ],
   "tijden_note": "Other times are possible in consultation with the ward.",
-  "emergency_number": "+3138123456767",
+  "emergency_number": "",
   "emergency_label": "Call the nursing station directly"
 }
