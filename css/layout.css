@@ -51,18 +51,29 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webki
   color: var(--text3);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1px;
-  width: auto;
+  width: auto !important;
+  min-width: 52px;
+  height: 36px;
   padding: 0 10px;
   border-radius: 50px;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
+.icon-btn.lang-btn:active { opacity: 0.7; }
 .lang-nl, .lang-en {
   transition: color 0.15s ease;
   color: var(--text3);
+  pointer-events: none;
 }
 .lang-sep {
   color: var(--border2);
   margin: 0 1px;
+  pointer-events: none;
 }
 .lang-active {
   color: var(--teal);
