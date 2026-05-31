@@ -1059,6 +1059,13 @@ a.nav-item { text-decoration: none; color: inherit; }
     <div id="customNavItems"></div>
   </div>
 
+  <div class="sidebar-section-label" style="margin-top:8px">🇬🇧 English content</div>
+  <div class="nav-item" data-page="home_en" onclick="navigate('home_en')"><i class="ti ti-home"></i> Home (EN) <span class="nav-badge" style="background:rgba(74,184,232,0.15);color:var(--sky)">EN</span></div>
+  <div class="nav-item" data-page="team_en" onclick="navigate('team_en')"><i class="ti ti-users"></i> Treatment Team <span class="nav-badge" style="background:rgba(74,184,232,0.15);color:var(--sky)">EN</span></div>
+  <div class="nav-item" data-page="programma_en" onclick="navigate('programma_en')"><i class="ti ti-calendar"></i> Daily Programme <span class="nav-badge" style="background:rgba(74,184,232,0.15);color:var(--sky)">EN</span></div>
+  <div class="nav-item" data-page="regels_en" onclick="navigate('regels_en')"><i class="ti ti-clipboard-list"></i> Rules & Vision <span class="nav-badge" style="background:rgba(74,184,232,0.15);color:var(--sky)">EN</span></div>
+  <div class="nav-item" data-page="contact_en" onclick="navigate('contact_en')"><i class="ti ti-phone"></i> Contact (EN) <span class="nav-badge" style="background:rgba(74,184,232,0.15);color:var(--sky)">EN</span></div>
+
   <div class="sidebar-section-label" style="margin-top:8px">Bibliotheek</div>
   <div class="nav-item" data-page="media" onclick="navigate('media')"><i class="ti ti-photo"></i> Media</div>
 
@@ -1346,6 +1353,12 @@ function renderPage(page) {
   else if (page === 'contact') renderContactEditor(area);
   else if (page === 'media') renderMediaPage(area);
   else if (page === 'instellingen') renderInstellingenPage(area);
+  /* ── English content pages ── */
+  else if (page === 'home_en') renderHomeEditorEn(area);
+  else if (page === 'team_en') renderCardListEditorEn(area, 'team', 'Treatment Team', 'ti-users');
+  else if (page === 'programma_en') renderCardListEditorEn(area, 'programma', 'Daily Programme', 'ti-calendar');
+  else if (page === 'regels_en') renderCardListEditorEn(area, 'regels', 'Rules & Vision', 'ti-clipboard-list');
+  else if (page === 'contact_en') renderContactEditorEn(area);
   else if (page && page.startsWith('custom_') && data[page]) {
     const customName = data._meta?.names?.[page] || page;
     renderCardListEditor(area, page, customName, 'Kaarten', 'ti-folder', true);
@@ -2522,6 +2535,20 @@ function recordEdit(section) {
 ══════════════════════════════════════════════════════════ */
 /* ── unsaved changes tracker ── */
 let hasUnsavedChanges = false;
+let dataEn = {
+  home: { hero_title:'', hero_ward:'', hero_body:'', notice_text:'', infomap_body:'' },
+  team: { cards:[] },
+  programma: { cards:[] },
+  regels: { cards:[] },
+  contact: { persons:[], tijden:[], tijden_note:'' }
+};
+
+function triggerAutoSaveEn() {
+  hasUnsavedChanges = true;
+  const pill = document.getElementById('statusPill');
+  if (pill) { pill.classList.add('saving'); pill.innerHTML = '<div class="status-dot"></div> Niet gepubliceerd'; }
+  try { localStorage.setItem('ivb-cms-data-en', JSON.stringify(dataEn)); } catch(e) {}
+}
 
 function triggerAutoSave(section) {
   if (section) recordEdit(section);
@@ -2546,11 +2573,17 @@ async function publishAll() {
 
   /* Build the files payload — matches your content/ folder structure */
   const files = {
-    'data/home.json':      data.home,
-    'data/team.json':      data.team,
-    'data/programma.json': data.programma,
-    'data/regels.json':    data.regels,
-    'data/contact.json':   data.contact,
+    'data/home.json':         data.home,
+    'data/team.json':         data.team,
+    'data/programma.json':    data.programma,
+    'data/regels.json':       data.regels,
+    'data/contact.json':      data.contact,
+    /* English versions */
+    'data/home.en.json':      dataEn.home,
+    'data/team.en.json':      dataEn.team,
+    'data/programma.en.json': dataEn.programma,
+    'data/regels.en.json':    dataEn.regels,
+    'data/contact.en.json':   dataEn.contact,
 };
 
   try {
@@ -2712,10 +2745,195 @@ document.getElementById('loginBtn').addEventListener('click', () => {
   }
 });
 
+
+/* ══════════════════════════════════════════════════════════
+   ENGLISH CONTENT EDITORS
+   These mirror the Dutch editors but use dataEn instead of data
+   and publish to *.en.json files.
+══════════════════════════════════════════════════════════ */
+
+function enBackBtn(label) {
+  return `<div class="topbar-btn" onclick="navigate('dashboard')"><i class="ti ti-arrow-left"></i> Back</div>`;
+}
+
+/* ── EN HOME EDITOR ── */
+function renderHomeEditorEn(area) {
+  const h = dataEn.home;
+  area.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-type-label"><i class="ti ti-home"></i> English content</div>
+        <div class="page-title-big">Home (EN)</div>
+        <div class="page-meta">English version of the home screen</div>
+      </div>
+      <div class="page-actions">${enBackBtn()}</div>
+    </div>
+    <div class="info-banner" style="border-color:rgba(74,184,232,0.3);background:rgba(74,184,232,0.06);margin-bottom:16px">
+      <i class="ti ti-language" style="color:var(--sky)"></i>
+      <div>Editing the <strong>English</strong> version. These changes publish to <code>data/home.en.json</code>.</div>
+    </div>
+    <div class="section-group">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-home sg-icon"></i>
+        <div class="sg-title">Welcome screen</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        <div class="field">
+          <div class="field-label">Welcome title</div>
+          <input class="input" value="${esc(h.hero_title)}" maxlength="80" oninput="dataEn.home.hero_title=this.value;triggerAutoSaveEn()">
+        </div>
+        <div class="field">
+          <div class="field-label">Ward name</div>
+          <input class="input" value="${esc(h.hero_ward)}" maxlength="40" oninput="dataEn.home.hero_ward=this.value;triggerAutoSaveEn()">
+        </div>
+        <div class="field">
+          <div class="field-label">Welcome text</div>
+          <textarea class="textarea" maxlength="280" oninput="dataEn.home.hero_body=this.value;triggerAutoSaveEn()">${esc(h.hero_body)}</textarea>
+        </div>
+        <div class="field">
+          <div class="field-label">Notice text (blue box)</div>
+          <textarea class="textarea" maxlength="200" style="min-height:70px" oninput="dataEn.home.notice_text=this.value;triggerAutoSaveEn()">${esc(h.notice_text)}</textarea>
+        </div>
+        <div class="field">
+          <div class="field-label">Information guide description</div>
+          <textarea class="textarea" oninput="dataEn.home.infomap_body=this.value;triggerAutoSaveEn()">${esc(h.infomap_body)}</textarea>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── EN CARD LIST EDITOR (team / programma / regels) ── */
+function renderCardListEditorEn(area, section, title, icon) {
+  const cards = dataEn[section].cards;
+  area.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-type-label"><i class="ti ${icon}"></i> English content</div>
+        <div class="page-title-big">${title} <span style="font-size:13px;color:var(--sky);font-weight:400">(EN)</span></div>
+        <div class="page-meta">${cards.length} card${cards.length!==1?'s':''} · English version</div>
+      </div>
+      <div class="page-actions">${enBackBtn()}</div>
+    </div>
+    <div class="info-banner" style="border-color:rgba(74,184,232,0.3);background:rgba(74,184,232,0.06);margin-bottom:16px">
+      <i class="ti ti-language" style="color:var(--sky)"></i>
+      <div>Editing the <strong>English</strong> version. Structure (icons, colours) is shared with Dutch. Only text fields are editable here.</div>
+    </div>
+    <div class="card-list" id="cardList-en-${section}">
+      ${cards.map((c,i) => `
+        <div class="section-group" style="margin-bottom:10px">
+          <div class="section-group-header" onclick="toggleSectionGroup(this)">
+            <div class="acc-icon ${esc(c.color||'ic-sky')}" style="width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0"><i class="ti ${esc(c.icon||'ti-file')}"></i></div>
+            <div class="sg-title" style="margin-left:8px">${esc(c.title||'Card '+(i+1))}</div>
+            <i class="ti ti-chevron-down sg-toggle open"></i>
+          </div>
+          <div class="section-group-body">
+            <div class="field">
+              <div class="field-label">Title</div>
+              <input class="input" value="${esc(c.title)}" oninput="dataEn['${section}'].cards[${i}].title=this.value;triggerAutoSaveEn()">
+            </div>
+            <div class="field">
+              <div class="field-label">Subtitle</div>
+              <input class="input" value="${esc(c.subtitle||'')}" oninput="dataEn['${section}'].cards[${i}].subtitle=this.value;triggerAutoSaveEn()">
+            </div>
+            <div class="field">
+              <div class="field-label">Body text</div>
+              <textarea class="textarea" oninput="dataEn['${section}'].cards[${i}].body=this.value;triggerAutoSaveEn()">${esc(c.body||'')}</textarea>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ── EN CONTACT EDITOR ── */
+function renderContactEditorEn(area) {
+  const d = dataEn.contact;
+  area.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-type-label"><i class="ti ti-phone"></i> English content</div>
+        <div class="page-title-big">Contact <span style="font-size:13px;color:var(--sky);font-weight:400">(EN)</span></div>
+        <div class="page-meta">English contact information</div>
+      </div>
+      <div class="page-actions">${enBackBtn()}</div>
+    </div>
+    <div class="info-banner" style="border-color:rgba(74,184,232,0.3);background:rgba(74,184,232,0.06);margin-bottom:16px">
+      <i class="ti ti-language" style="color:var(--sky)"></i>
+      <div>Editing the <strong>English</strong> version. These changes publish to <code>data/contact.en.json</code>.</div>
+    </div>
+    <div class="section-group">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-users sg-icon"></i>
+        <div class="sg-title">Contact persons</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        ${d.persons.map((p,i) => `
+          <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">${esc(p.name||'Person '+(i+1))}</div>
+            <div class="field">
+              <div class="field-label">Name</div>
+              <input class="input" value="${esc(p.name||'')}" oninput="dataEn.contact.persons[${i}].name=this.value;triggerAutoSaveEn()">
+            </div>
+            <div class="field">
+              <div class="field-label">Role / description</div>
+              <input class="input" value="${esc(p.role||'')}" oninput="dataEn.contact.persons[${i}].role=this.value;triggerAutoSaveEn()">
+            </div>
+            <div class="field">
+              <div class="field-label">Contact info</div>
+              <input class="input" value="${esc(p.info||'')}" oninput="dataEn.contact.persons[${i}].info=this.value;triggerAutoSaveEn()">
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="section-group">
+      <div class="section-group-header" onclick="toggleSectionGroup(this)">
+        <i class="ti ti-clock sg-icon"></i>
+        <div class="sg-title">Opening hours</div>
+        <i class="ti ti-chevron-down sg-toggle open"></i>
+      </div>
+      <div class="section-group-body">
+        ${d.tijden.map((t,i) => `
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input class="input" value="${esc(t.label||'')}" placeholder="Label" oninput="dataEn.contact.tijden[${i}].label=this.value;triggerAutoSaveEn()" style="flex:1">
+            <input class="input" value="${esc(t.tijd||'')}" placeholder="Time" oninput="dataEn.contact.tijden[${i}].tijd=this.value;triggerAutoSaveEn()" style="flex:1">
+          </div>`).join('')}
+        <div class="field" style="margin-top:8px">
+          <div class="field-label">Hours note</div>
+          <input class="input" value="${esc(d.tijden_note||'')}" oninput="dataEn.contact.tijden_note=this.value;triggerAutoSaveEn()">
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Load EN data from GitHub on boot ── */
+async function loadEnData() {
+  const base = 'https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/data/';
+  try {
+    const [home, team, programma, regels, contact] = await Promise.all([
+      fetch(base + 'home.en.json').then(r => r.json()),
+      fetch(base + 'team.en.json').then(r => r.json()),
+      fetch(base + 'programma.en.json').then(r => r.json()),
+      fetch(base + 'regels.en.json').then(r => r.json()),
+      fetch(base + 'contact.en.json').then(r => r.json()),
+    ]);
+    dataEn = { home, team, programma, regels, contact };
+    try { localStorage.setItem('ivb-cms-data-en', JSON.stringify(dataEn)); } catch(e) {}
+  } catch(err) {
+    console.warn('Could not load EN data from GitHub:', err);
+  }
+}
+
 function bootCMS() {
   try {
     const saved = localStorage.getItem('ivb-cms-data');
     if (saved) data = JSON.parse(saved);
+  } catch(e) {}
+
+  /* Load English data from localStorage or init empty shells */
+  try {
+    const savedEn = localStorage.getItem('ivb-cms-data-en');
+    if (savedEn) dataEn = JSON.parse(savedEn);
   } catch(e) {}
 
   /* Apply saved app name to document title */
@@ -2731,6 +2949,8 @@ function bootCMS() {
   }
   navigate('dashboard');
   updateNavBadges();
+  /* Load EN data from GitHub (async, non-blocking) */
+  loadEnData();
   applyPreviewVisibility();
 
   /* Show logged-in user in topbar */
