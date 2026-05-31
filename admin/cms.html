@@ -2907,15 +2907,36 @@ function renderContactEditorEn(area) {
 }
 
 /* ── Load EN data from GitHub on boot ── */
+async function loadNlData() {
+  const base = 'https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/data/';
+  try {
+    const [home, team, programma, regels, contact] = await Promise.all([
+      fetch(base + 'home.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'team.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'programma.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'regels.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'contact.json?_=' + Date.now()).then(r => r.json()),
+    ]);
+    /* Merge into data, preserving any _meta CMS settings that only live locally */
+    const meta = data._meta;
+    data = { home, team, programma, regels, contact };
+    if (meta) data._meta = meta;
+    try { localStorage.setItem('ivb-cms-data', JSON.stringify(data)); } catch(e) {}
+    updateNavBadges();
+  } catch(err) {
+    console.warn('Could not load NL data from GitHub:', err);
+  }
+}
+
 async function loadEnData() {
   const base = 'https://raw.githubusercontent.com/ilmastro/ivb-highcare-v2/main/data/';
   try {
     const [home, team, programma, regels, contact] = await Promise.all([
-      fetch(base + 'home.en.json').then(r => r.json()),
-      fetch(base + 'team.en.json').then(r => r.json()),
-      fetch(base + 'programma.en.json').then(r => r.json()),
-      fetch(base + 'regels.en.json').then(r => r.json()),
-      fetch(base + 'contact.en.json').then(r => r.json()),
+      fetch(base + 'home.en.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'team.en.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'programma.en.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'regels.en.json?_=' + Date.now()).then(r => r.json()),
+      fetch(base + 'contact.en.json?_=' + Date.now()).then(r => r.json()),
     ]);
     dataEn = { home, team, programma, regels, contact };
     try { localStorage.setItem('ivb-cms-data-en', JSON.stringify(dataEn)); } catch(e) {}
@@ -2924,7 +2945,8 @@ async function loadEnData() {
   }
 }
 
-function bootCMS() {
+async function bootCMS() {
+  /* Seed from localStorage so the UI is instant */
   try {
     const saved = localStorage.getItem('ivb-cms-data');
     if (saved) data = JSON.parse(saved);
@@ -2949,7 +2971,9 @@ function bootCMS() {
   }
   navigate('dashboard');
   updateNavBadges();
-  /* Load EN data from GitHub (async, non-blocking) */
+  /* Sync NL + EN data from GitHub (cache-busted) so CMS always reflects
+     what's actually live — even if edits were made outside the CMS.     */
+  await loadNlData();
   loadEnData();
   applyPreviewVisibility();
 
