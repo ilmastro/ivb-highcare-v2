@@ -15,12 +15,21 @@ function goTo(tab, pushState = true) {
   }
 }
 
-/* Seed the initial history entry on page load */
-history.replaceState({ tab: 'home' }, '', '#home');
+/* Only seed history entries if there is no Netlify Identity token in the hash.
+   Invite and recovery links contain #invite_token= or #recovery_token= — if we
+   overwrite the hash here the token is lost and the password-creation modal
+   never opens. */
+var _hash = window.location.hash || '';
+var _hasIdentityToken = _hash.indexOf('invite_token=') !== -1 || _hash.indexOf('recovery_token=') !== -1;
 
-/* Keep one extra sentinel entry ahead of home so popstate
-   always fires even when on the home tab */
-history.pushState({ tab: '__sentinel__' }, '', '#home');
+if (!_hasIdentityToken) {
+  /* Seed the initial history entry on page load */
+  history.replaceState({ tab: 'home' }, '', '#home');
+
+  /* Keep one extra sentinel entry ahead of home so popstate
+     always fires even when on the home tab */
+  history.pushState({ tab: '__sentinel__' }, '', '#home');
+}
 
 /* Android back button */
 window.addEventListener('popstate', function(e) {
