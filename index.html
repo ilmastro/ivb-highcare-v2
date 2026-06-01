@@ -109,7 +109,33 @@
 </div>
 
 <script>
-  /* ── Netlify Identity redirect ── */
+  /* ── Netlify Identity: handle invite & recovery tokens BEFORE app router ──
+     When Netlify emails an invite or password-reset link, the URL looks like:
+       https://your-site.netlify.app/#invite_token=xxxxx
+       https://your-site.netlify.app/#recovery_token=xxxxx
+     We must detect these tokens early and open the Identity modal,
+     otherwise the app's own hash-based router swallows them. */
+  (function () {
+    var hash = window.location.hash;
+    if (hash && (hash.indexOf('invite_token=') !== -1 || hash.indexOf('recovery_token=') !== -1)) {
+      /* Prevent the app router from navigating away */
+      window.location.hash = '';
+
+      /* Wait for the widget to be ready, then open it */
+      document.addEventListener('DOMContentLoaded', function () {
+        var checkWidget = setInterval(function () {
+          if (window.netlifyIdentity) {
+            clearInterval(checkWidget);
+            /* Re-apply the token so the widget can process it */
+            window.location.hash = hash;
+            window.netlifyIdentity.open();
+          }
+        }, 100);
+      });
+    }
+  })();
+
+  /* ── Netlify Identity redirect on login ── */
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on('init', user => {
       if (!user) {
@@ -117,6 +143,21 @@
           document.location.href = '/admin/';
         });
       }
+    });
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      var checkWidget = setInterval(function () {
+        if (window.netlifyIdentity) {
+          clearInterval(checkWidget);
+          window.netlifyIdentity.on('init', function (user) {
+            if (!user) {
+              window.netlifyIdentity.on('login', function () {
+                document.location.href = '/admin/';
+              });
+            }
+          });
+        }
+      }, 100);
     });
   }
 
