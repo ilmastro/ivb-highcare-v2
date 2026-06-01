@@ -103,7 +103,13 @@
       "color": "ic-sky",
       "title": "Wat is ART",
       "subtitle": "Film",
-      "body": "Wat is ART: https://www.youtube.com/watch?v=HwMvdu-EyqE"
+      "body": "Wat is ART:",
+      "videos": [
+        {
+          "label": "",
+          "url": "https://www.youtube.com/watch?v=HwMvdu-EyqE"
+        }
+      ]
     }
   ]
 }
