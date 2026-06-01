@@ -1,0 +1,23 @@
+# Netlify configuration
+
+[build]
+  publish = "."
+
+# Redirect all routes to index.html for SPA routing
+# EXCEPT the admin path and identity callbacks
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Ensure Netlify Identity confirmation/invite/recovery emails
+# land on the identity widget, not the app router
+[[redirects]]
+  from = "/#invite_token=*"
+  to = "/#invite_token=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/#recovery_token=*"
+  to = "/#recovery_token=:splat"
+  status = 200
