@@ -4,7 +4,7 @@
    - everything else          → CACHE-FIRST    (fast shell, works fully offline)
 */
 
-const CACHE_NAME = 'ivb-highcare-v8';
+const CACHE_NAME = 'ivb-highcare-v9';
 
 const SHELL_ASSETS = [
   './index.html',
