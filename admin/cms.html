@@ -1571,6 +1571,8 @@ function renderCardItem(section, card, idx) {
   const hasPhases = card.phases && card.phases.length > 0;
   const hasWarning = card.warning;
   const hasSchedule = card.schedule && card.schedule.length > 0;
+  const hasVideos = card.videos && card.videos.length > 0;
+  const hasLinks = card.links && card.links.length > 0;
 
   return `
   <div class="card-item" id="ci-${section}-${idx}">
@@ -1618,6 +1620,8 @@ function renderCardItem(section, card, idx) {
       ${hasTijden || section === 'regels' ? renderTijdenField(section, idx, card.tijden || []) : ''}
       ${hasPhases || (section === 'regels' && card.id === 'visie') ? renderPhasesField(section, idx, card.phases || []) : ''}
       ${section === 'programma' ? renderScheduleField(section, idx, card.schedule || []) : ''}
+      ${renderVideosField(section, idx, card.videos || [])}
+      ${renderLinksField(section, idx, card.links || [])}
     </div>
   </div>`;
 }
@@ -1675,6 +1679,50 @@ function renderScheduleField(section, idx, schedule) {
         </div>`).join('')}
     </div>
     <div class="add-sub-btn" onclick="addScheduleBlock('${section}',${idx})"><i class="ti ti-plus"></i> Dag toevoegen</div>
+  </div>`;
+}
+
+function renderVideosField(section, idx, videos) {
+  return `<div class="field">
+    <div class="field-label" style="display:flex;align-items:center;gap:6px">
+      <i class="ti ti-brand-youtube" style="color:#ff0000;font-size:15px"></i>
+      YouTube video's
+      <span style="font-weight:400;color:var(--text3);font-size:11px;margin-left:2px">— worden afgespeeld in de app</span>
+    </div>
+    <div class="sub-list" id="videos-${section}-${idx}">
+      ${videos.map((v,vi) => `
+        <div class="sub-item" style="flex-direction:column;align-items:stretch;gap:6px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <i class="ti ti-brand-youtube" style="color:#ff0000;flex-shrink:0;font-size:16px"></i>
+            <input class="input" value="${esc(v.label||'')}" placeholder="Titel van de video" oninput="updateSubItemObj('${section}',${idx},'videos',${vi},'label',this.value)" style="flex:1">
+            <div class="sub-del" onclick="removeSubItemObj('${section}',${idx},'videos',${vi})"><i class="ti ti-x"></i></div>
+          </div>
+          <input class="input" value="${esc(v.url||'')}" placeholder="YouTube URL, bijv. https://www.youtube.com/watch?v=…" oninput="updateSubItemObj('${section}',${idx},'videos',${vi},'url',this.value)" style="font-size:11px;color:var(--text3)">
+        </div>`).join('')}
+    </div>
+    <div class="add-sub-btn" onclick="addSubItemObj('${section}',${idx},'videos',{label:'',url:''})"><i class="ti ti-plus"></i> Video toevoegen</div>
+  </div>`;
+}
+
+function renderLinksField(section, idx, links) {
+  return `<div class="field">
+    <div class="field-label" style="display:flex;align-items:center;gap:6px">
+      <i class="ti ti-link" style="color:var(--accent);font-size:15px"></i>
+      Links
+      <span style="font-weight:400;color:var(--text3);font-size:11px;margin-left:2px">— klikbaar in de app</span>
+    </div>
+    <div class="sub-list" id="links-${section}-${idx}">
+      ${links.map((l,li) => `
+        <div class="sub-item" style="flex-direction:column;align-items:stretch;gap:6px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <i class="ti ti-link" style="color:var(--accent);flex-shrink:0;font-size:15px"></i>
+            <input class="input" value="${esc(l.label||'')}" placeholder="Linktekst, bijv. Meer informatie" oninput="updateSubItemObj('${section}',${idx},'links',${li},'label',this.value)" style="flex:1">
+            <div class="sub-del" onclick="removeSubItemObj('${section}',${idx},'links',${li})"><i class="ti ti-x"></i></div>
+          </div>
+          <input class="input" value="${esc(l.url||'')}" placeholder="URL, bijv. https://www.ggnet.nl/…" oninput="updateSubItemObj('${section}',${idx},'links',${li},'url',this.value)" style="font-size:11px;color:var(--text3)">
+        </div>`).join('')}
+    </div>
+    <div class="add-sub-btn" onclick="addSubItemObj('${section}',${idx},'links',{label:'',url:''})"><i class="ti ti-plus"></i> Link toevoegen</div>
   </div>`;
 }
 
