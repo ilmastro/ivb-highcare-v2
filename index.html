@@ -2,6 +2,15 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
+  <!-- IDENTITY TOKEN REDIRECT — must be first script in document -->
+  <script>
+    (function () {
+      var h = window.location.hash || '';
+      if (h.indexOf('invite_token=') !== -1 || h.indexOf('recovery_token=') !== -1) {
+        window.location.replace('/admin/' + h);
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -220,5 +229,6 @@
 </script>
 </body>
 </html>
+
 
 
