@@ -194,3 +194,146 @@
   z-index: 1;
   position: relative;
 }
+
+/* ── YOUTUBE EMBED CARD ─────────────────────────────────────── */
+.yt-embed {
+  margin-top: 12px;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border1);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.yt-embed:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+.yt-thumb-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+.yt-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+}
+.yt-play-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  background: rgba(0,0,0,0.28);
+  transition: background 0.15s;
+}
+.yt-embed:hover .yt-play-btn { background: rgba(0,0,0,0.44); }
+.yt-label {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text1);
+  background: var(--surface);
+  border-top: 1px solid var(--border1);
+}
+
+/* ── YOUTUBE MODAL ──────────────────────────────────────────── */
+.yt-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.yt-modal-overlay.open { display: flex; }
+.yt-modal-box {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg2);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.yt-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  gap: 10px;
+}
+.yt-modal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text1);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.yt-modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text2);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.yt-modal-close:hover { background: var(--border1); }
+.yt-modal-player {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+.yt-modal-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── EXTERNAL LINK ROW ──────────────────────────────────────── */
+.ext-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border1);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text1);
+  transition: border-color 0.15s, background 0.15s;
+}
+.ext-link-row:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.ext-link-icon {
+  font-size: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.ext-link-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ext-link-arrow {
+  font-size: 14px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
