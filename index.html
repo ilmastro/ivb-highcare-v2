@@ -109,16 +109,23 @@
 </div>
 
 <script>
-  /* ── Netlify Identity: handle invite & recovery tokens ──
-     The widget script is now synchronous (no defer), so netlifyIdentity
-     is available immediately. We just need to open the modal and let the
-     widget handle the token that's already in the hash — no clearing or
-     re-applying needed. The widget reads window.location.hash itself. */
+  /* ── Netlify Identity: token handling ──────────────────────────
+     Invite and recovery links land here as:
+       https://ggnetapp.netlify.app/#invite_token=xxxxx
+       https://ggnetapp.netlify.app/#recovery_token=xxxxx
+
+     The cleanest approach: detect the token and immediately redirect
+     to /admin/ WITH the token in the hash. The Netlify CMS identity
+     widget in admin/index.html handles it natively — no fighting with
+     our app router at all.
+  ──────────────────────────────────────────────────────────────── */
   (function () {
-    var hash = window.location.hash;
-    if (hash && (hash.indexOf('invite_token=') !== -1 || hash.indexOf('recovery_token=') !== -1)) {
-      /* Widget is already loaded (no defer), open it immediately */
-      window.netlifyIdentity && window.netlifyIdentity.open();
+    var hash = window.location.hash || '';
+    if (hash.indexOf('invite_token=') !== -1 || hash.indexOf('recovery_token=') !== -1) {
+      /* Hard redirect to /admin/ preserving the full hash token */
+      window.location.replace('/admin/' + hash);
+      /* Stop everything else from running */
+      throw new Error('Redirecting to admin for identity token handling');
     }
   })();
 
@@ -213,4 +220,5 @@
 </script>
 </body>
 </html>
+
 
