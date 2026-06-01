@@ -50,6 +50,43 @@ function buildTijden(tijden) {
     </div>`).join('');
 }
 
+/* Extract a YouTube video ID from any standard YouTube URL */
+function ytId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function buildVideos(videos) {
+  if (!videos || !videos.length) return '';
+  return videos.map(v => {
+    const id = ytId(v.url);
+    if (!id) return '';
+    const thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    return `
+    <div class="yt-embed" onclick="openYouTube('${escHtml(id)}','${escHtml(v.label||'')}')">
+      <div class="yt-thumb-wrap">
+        <img class="yt-thumb" src="${thumb}" alt="${escHtml(v.label||'Video')}" loading="lazy">
+        <div class="yt-play-btn"><i class="ti ti-player-play-filled"></i></div>
+      </div>
+      ${v.label ? `<div class="yt-label">${escHtml(v.label)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function buildLinks(links) {
+  if (!links || !links.length) return '';
+  return links.map(l => {
+    if (!l.url) return '';
+    return `
+    <a class="ext-link-row" href="${escHtml(l.url)}" target="_blank" rel="noopener noreferrer">
+      <i class="ti ti-link ext-link-icon"></i>
+      <span class="ext-link-label">${escHtml(l.label || l.url)}</span>
+      <i class="ti ti-external-link ext-link-arrow"></i>
+    </a>`;
+  }).join('');
+}
+
 function buildAccCard(card, extraBody = '') {
   return `
     <div class="acc-card" onclick="toggleAcc(this)">
@@ -64,6 +101,8 @@ function buildAccCard(card, extraBody = '') {
       <div class="acc-body"><div class="acc-body-inner">
         ${bodyToHtml(card.body)}
         ${extraBody}
+        ${buildVideos(card.videos)}
+        ${buildLinks(card.links)}
       </div></div>
     </div>`;
 }
