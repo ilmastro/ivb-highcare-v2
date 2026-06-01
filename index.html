@@ -82,6 +82,19 @@
 
 </div><!-- /app -->
 
+<!-- YOUTUBE MODAL -->
+<div id="ytModal" class="yt-modal-overlay" onclick="closeYouTube(event)">
+  <div class="yt-modal-box">
+    <div class="yt-modal-header">
+      <span class="yt-modal-title" id="ytModalTitle"></span>
+      <button class="yt-modal-close" onclick="closeYouTube()" aria-label="Sluiten"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="yt-modal-player">
+      <iframe id="ytFrame" src="" allowfullscreen allow="autoplay; encrypted-media" frameborder="0" loading="lazy"></iframe>
+    </div>
+  </div>
+</div>
+
 <!-- JS: order matters — theme & nav first, then render, then search -->
 <script src="js/lang.js"></script>
 <script src="js/theme.js"></script>
@@ -226,6 +239,31 @@
       console.warn('SW registration failed:', err);
     });
   }
+</script>
+<script>
+/* ── YOUTUBE MODAL ── */
+function openYouTube(videoId, title) {
+  const modal = document.getElementById('ytModal');
+  const frame = document.getElementById('ytFrame');
+  const titleEl = document.getElementById('ytModalTitle');
+  if (!modal || !frame) return;
+  titleEl.textContent = title || '';
+  frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeYouTube(e) {
+  if (e && e.target !== document.getElementById('ytModal')) return;
+  const modal = document.getElementById('ytModal');
+  const frame = document.getElementById('ytFrame');
+  if (!modal) return;
+  modal.classList.remove('open');
+  if (frame) frame.src = '';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeYouTube(); }
+});
 </script>
 </body>
 </html>
