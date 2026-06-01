@@ -96,6 +96,14 @@
       "title": "Patiëntenvertrouwenspersoon (PVP)",
       "subtitle": "Onafhankelijk en vertrouwelijk",
       "body": "Heeft u vragen of klachten? Dan kunt u terecht bij de PVP."
+    },
+    {
+      "id": "card_1780306409198",
+      "icon": "ti-circle",
+      "color": "ic-sky",
+      "title": "Wat is ART",
+      "subtitle": "Film",
+      "body": "Wat is ART: https://www.youtube.com/watch?v=HwMvdu-EyqE"
     }
   ]
 }
