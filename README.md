@@ -1,4 +1,4 @@
-# IVB High Care — Informatiegids
+# De Spreng — Informatiegids
 
 > **Digitale patiëntengids voor Afdeling ART / De Spreng — GGNet**
 
