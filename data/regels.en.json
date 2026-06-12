@@ -96,6 +96,20 @@
       "title": "Patient Confidential Adviser (PVP)",
       "subtitle": "Independent and confidential",
       "body": "Do you have questions or complaints? You can contact the PVP."
+    },
+    {
+      "id": "card_1780306409198",
+      "icon": "ti-circle",
+      "color": "ic-sky",
+      "title": "What is ART",
+      "subtitle": "Video",
+      "body": "What is ART:",
+      "videos": [
+        {
+          "label": "ART Monitor",
+          "url": "https://www.youtube.com/watch?v=HwMvdu-EyqE"
+        }
+      ]
     }
   ]
 }
