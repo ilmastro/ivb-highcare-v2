@@ -2766,15 +2766,19 @@ let identityReady = false;
 
 window.netlifyIdentity.on('init', user => {
   identityReady = true;
-  if (user) {
-    currentUser = user;
+  /* Always re-derive from the widget's live state rather than trusting
+     the cached `user` argument — avoids showing a stale account name
+     after switching accounts. */
+  const live = window.netlifyIdentity.currentUser();
+  if (live) {
+    currentUser = live;
     document.getElementById('authGate').classList.add('hidden');
     bootCMS();
   }
 });
 
 window.netlifyIdentity.on('login', user => {
-  currentUser = user;
+  currentUser = window.netlifyIdentity.currentUser() || user;
   document.getElementById('authGate').classList.add('hidden');
   window.netlifyIdentity.close();
   bootCMS();
@@ -2782,6 +2786,14 @@ window.netlifyIdentity.on('login', user => {
 
 window.netlifyIdentity.on('logout', () => {
   currentUser = null;
+  /* Clear any stale persisted session so the next login doesn't
+     inherit the previous account's cached identity. */
+  try {
+    localStorage.removeItem('gotrue.user');
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('gotrue.'))
+      .forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
   document.getElementById('authGate').classList.remove('hidden');
 });
 
@@ -3026,7 +3038,7 @@ async function bootCMS() {
   applyPreviewVisibility();
 
   /* Show logged-in user in topbar */
-  const email = currentUser.email || '';
+  const email = currentUser?.email || '';
   document.getElementById('userEmail').textContent = email;
   document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
 }
